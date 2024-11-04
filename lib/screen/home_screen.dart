@@ -16,7 +16,11 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Expanded(
-        child: Category(),
+        child: Column(
+          children: [
+            Category(),
+          ],
+        ),
       )
     );
   }
