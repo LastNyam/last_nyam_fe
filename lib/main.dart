@@ -1,4 +1,4 @@
-import 'package:last_nyam/screen/home_screen.dart';
+import 'package:last_nyam/screen/root_screen.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -8,7 +8,7 @@ void main() {
       theme: ThemeData(
         fontFamily: 'nanumBarunGothic',
       ),
-      home: HomeScreen(),
+      home: RootScreen(),
     ),
   );
 }
