@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_nyam/const/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 
@@ -14,6 +15,8 @@ class NicknameChangeScreen extends StatefulWidget {
 
 class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   late TextEditingController _nicknameController;
+  String? _errorMessage;
+  bool _isValid = true;
 
   @override
   void initState() {
@@ -46,47 +49,117 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
         ),
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '새로운 닉네임을 입력해주세요',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-            ),
-            SizedBox(height: 10),
-            TextField(
-              controller: _nicknameController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                contentPadding: EdgeInsets.symmetric(horizontal: 16.0),
+      body: Container(
+        color: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                '새로운 닉네임을 입력해주세요',
+                style: TextStyle(fontSize: 16, color: Colors.black),
               ),
-            ),
-            Spacer(),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // 닉네임 변경 로직
-                  String newNickname = _nicknameController.text;
-                  print('닉네임 변경: $newNickname');
+              SizedBox(height: 10),
+              TextField(
+                controller: _nicknameController,
+                decoration: InputDecoration(
+                  filled: true,
+                  // 배경색 활성화
+                  fillColor: defaultColors['white'],
+                  hintText: '닉네임을 입력하세요',
+                  hintStyle: TextStyle(color: Colors.grey),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: _isValid ? Colors.transparent : Color(0xff417c4e),
+                      width: 2.0,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(
+                      color: _isValid ? Colors.transparent : Color(0xff417c4e),
+                      width: 2.0,
+                    ),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                ),
+                onChanged: (value) {
+                  _validateInput();
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green, // 버튼 색상
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
+              ),
+              if (!_isValid) ...[
+                SizedBox(height: 8.0),
+                Text(
+                  _errorMessage!,
+                  style: TextStyle(
+                    color: defaultColors['green'],
+                    fontSize: 14,
+                  ),
                 ),
-                child: Text(
-                  '변경 완료',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
+              ],
+              Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () {
+                    String newNickname = _nicknameController.text.trim();
+                    if (newNickname.isNotEmpty && _isValid) {
+                      userState.updateUserName(newNickname);
+                      print('닉네임 변경 완료: $newNickname');
+                      Navigator.pop(context); // 변경 후 이전 화면으로 이동
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _isValid
+                        ? defaultColors['green']
+                        : defaultColors['lightGreen'], // 버튼 색상
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(5.0), // Border radius 설정
+                    ),
+                  ),
+                  child: Text(
+                    '변경 완료',
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
+  }
+
+  // 닉네임 유효성 검사 함수
+  bool validateNickname(String nickname) {
+    RegExp validRegex = RegExp(r'^[ㄱ-ㅎㅏ-ㅣa-zA-Z가-힣0-9]+$'); // 한글, 영문, 숫자만 허용
+    return validRegex.hasMatch(nickname);
+  }
+
+  void _validateInput() {
+    setState(() {
+      String nickname = _nicknameController.text;
+
+      if (validateNickname(nickname)) {
+        _isValid = true;
+        _errorMessage = null; // 오류 메시지 제거
+      } else {
+        _isValid = false;
+        _errorMessage = '닉네임은 한글, 영문, 숫자만 입력 가능합니다.';
+        return;
+      }
+
+      if (nickname.length <= 10 && nickname.length >= 2) {
+        _isValid = true;
+        _errorMessage = null; // 오류 메시지 제거
+      } else {
+        _isValid = false;
+        _errorMessage = '닉네임을 2~10자로 입력해주세요.';
+        return;
+      }
+    });
   }
 }
