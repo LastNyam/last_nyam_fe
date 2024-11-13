@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
+import 'package:last_nyam/screen/password_change_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/screen/nickname_change_screen.dart';
@@ -115,7 +116,12 @@ class ProfileEditScreen extends StatelessWidget {
                 ),
                 trailing: Icon(Icons.chevron_right, color: grey[350]),
                 onTap: () {
-                  // 비밀번호 변경 화면으로 이동
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PasswordChangeScreen(),
+                      )
+                  );
                 },
               ),
               // 휴대폰 번호 변경 섹션
