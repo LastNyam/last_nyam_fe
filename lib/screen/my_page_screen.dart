@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:last_nyam/const/colors.dart';
+import 'package:last_nyam/screen/favorite_stores_screen.dart';
 import 'package:last_nyam/screen/profile_edit_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
@@ -146,7 +147,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ProfileEditScreen(),
+                            builder: (context) => FavoriteStoresScreen(),
                           )
                       );
                     },
