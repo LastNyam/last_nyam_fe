@@ -39,6 +39,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
               children: [
                 CircleAvatar(
                   radius: 30,
+                  backgroundColor: defaultColors['white'],
                   backgroundImage:
                       AssetImage('${userState.profileImage}'), // 프로필 이미지 경로
                 ),
@@ -54,29 +55,28 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       ),
                     ),
                     GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfileEditScreen(),
-                          )
-                        );
-                      },
-                      child: Row(
-                        children: [
-                          Text(
-                            '${userState.userName}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: defaultColors['green'],
-                              fontWeight: FontWeight.bold,
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => ProfileEditScreen(),
+                              ));
+                        },
+                        child: Row(
+                          children: [
+                            Text(
+                              '${userState.userName}',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: defaultColors['green'],
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 5),
-                          Icon(Icons.chevron_right, size: 18, color: defaultColors['lightGreen']),
-                        ],
-                      )
-                    ),
+                            SizedBox(width: 5),
+                            Icon(Icons.chevron_right,
+                                size: 18, color: defaultColors['lightGreen']),
+                          ],
+                        )),
                   ],
                 ),
               ],
@@ -84,49 +84,51 @@ class _MyPageScreenState extends State<MyPageScreen> {
             SizedBox(height: 20),
             // 알림 텍스트
             Container(
-                width: double.infinity,
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: defaultColors['pureWhite'],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '지금까지 ',
-                      style: TextStyle(fontSize: 12),
-                      textAlign: TextAlign.center,
+              width: double.infinity,
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: defaultColors['pureWhite'],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    '지금까지 ',
+                    style: TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    "${userState.orderCount}",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: defaultColors['green'],
+                      fontWeight: FontWeight.bold,
                     ),
-                    Text(
-                      "${userState.orderCount}",
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: defaultColors['green'],
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      '건의 음식 폐기를 막았어요.',
-                      style: TextStyle(fontSize: 12),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                )),
+                    textAlign: TextAlign.center,
+                  ),
+                  Text(
+                    '건의 음식 폐기를 막았어요.',
+                    style: TextStyle(fontSize: 12),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
             SizedBox(height: 15),
             Divider(),
             SizedBox(height: 15),
             // 메뉴 리스트
             Row(
               children: [
-                SizedBox(width:15),
+                SizedBox(width: 15),
                 Text(
                   '냠냠 목록',
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: defaultColors['lightGreen']),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: defaultColors['lightGreen'],
+                  ),
                 ),
               ],
             ),
@@ -135,28 +137,41 @@ class _MyPageScreenState extends State<MyPageScreen> {
               child: ListView(
                 children: [
                   ListTile(
-                    leading: Icon(Icons.favorite_outline, color: defaultColors['black']),
+                    leading: Icon(Icons.favorite_outline,
+                        color: defaultColors['black']),
                     title: Text('관심 매장'),
-                    trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
-                    onTap: () {},
+                    trailing: Icon(Icons.chevron_right,
+                        color: defaultColors['lightGreen']),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfileEditScreen(),
+                          )
+                      );
+                    },
                   ),
                   ListTile(
                     leading: Icon(Icons.history, color: defaultColors['black']),
                     title: Text('최근 본 상품'),
-                    trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                    trailing: Icon(Icons.chevron_right,
+                        color: defaultColors['lightGreen']),
                     onTap: () {},
                   ),
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.logout, color: defaultColors['black']),
                     title: Text('로그아웃'),
-                    trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                    trailing: Icon(Icons.chevron_right,
+                        color: defaultColors['lightGreen']),
                     onTap: () {},
                   ),
                   ListTile(
-                    leading: Icon(Icons.person_remove_outlined, color: defaultColors['black']),
+                    leading: Icon(Icons.person_remove_outlined,
+                        color: defaultColors['black']),
                     title: Text('탈퇴'),
-                    trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                    trailing: Icon(Icons.chevron_right,
+                        color: defaultColors['lightGreen']),
                     onTap: () {},
                   ),
                 ],
