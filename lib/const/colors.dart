@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-Map<int, Color> grey = {
+Map<int?, Color?> grey = {
   100: Color(0xfff3f4f6),
   200: Color(0xffe5e7eb),
   300: Color(0xffd1d5db),
@@ -14,7 +14,7 @@ Map<int, Color> grey = {
   950: Color(0xff030712),
 };
 
-Map<String, Color> mannerTemperature = {
+Map<String?, Color?> mannerTemperature = {
   'primary': Color(0xff0000ff),
   'secondary': Color(0xff00bfff),
   'tertiary': Color(0xff7fff00),
@@ -25,7 +25,7 @@ Map<String, Color> mannerTemperature = {
   'octonary': Color(0xffff0000),
 };
 
-Map<String, Color> defaultColors = {
+Map<String?, Color?> defaultColors = {
   'green': Color(0xff417c4e),
   'lightGreen': Color(0xffb9c6bc),
   'pureWhite': Color(0xffffffff),
