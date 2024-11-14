@@ -178,7 +178,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     title: Text('로그아웃'),
                     trailing: Icon(Icons.chevron_right,
                         color: defaultColors['lightGreen']),
-                    onTap: () {},
+                    onTap: () => _showLogoutDialog(context),
                   ),
                   ListTile(
                     leading: Icon(Icons.person_remove_outlined,
@@ -186,7 +186,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     title: Text('탈퇴'),
                     trailing: Icon(Icons.chevron_right,
                         color: defaultColors['lightGreen']),
-                    onTap: () {},
+                    onTap: () => _showWithdrawalDialog(context),
                   ),
                 ],
               ),
@@ -194,6 +194,100 @@ class _MyPageScreenState extends State<MyPageScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.keyboard_arrow_down_sharp, size: 36.0, color: defaultColors['black']),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              Text(
+                '로그아웃하면 \'라스트 냠\'의 기능을 이용하지 못합니다.\n정말 로그아웃하시겠습니까?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // 알림창 닫기
+                  // 로그아웃 동작 추가
+                  print('로그아웃 처리');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: defaultColors['green'],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('로그아웃', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showWithdrawalDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(Icons.keyboard_arrow_down_sharp, size: 36.0, color: defaultColors['black']),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              Text(
+                '탈퇴하면 \‘라스트 냠\’의 기능을 이용하지 못함과 동시에 사용 기록이 소멸됩니다.\n정말 탈퇴하시겠습니까?',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 14),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context); // 알림창 닫기
+                  // 로그아웃 동작 추가
+                  print('로그아웃 처리');
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: defaultColors['green'],
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                  minimumSize: Size(double.infinity, 50),
+                ),
+                child: Text('로그아웃', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
