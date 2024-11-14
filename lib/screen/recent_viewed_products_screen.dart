@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:last_nyam/const/colors.dart';
 
 class RecentViewedProductsScreen extends StatefulWidget {
   @override
@@ -73,99 +74,103 @@ class _RecentViewedProductsScreenState
             onPressed: _clearAll,
             child: Text(
               "전체 삭제",
-              style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              style: TextStyle(color: grey[500], fontWeight: FontWeight.bold),
             ),
           ),
         ],
       ),
-      body: recentProducts.isEmpty
-          ? Center(
-        child: Text(
-          "최근 본 상품이 없습니다.",
-          style: TextStyle(fontSize: 16, color: Colors.grey),
-        ),
-      )
-          : ListView.separated(
-        itemCount: recentProducts.length,
-        separatorBuilder: (context, index) => Divider(),
-        itemBuilder: (context, index) {
-          final product = recentProducts[index];
-          return ListTile(
-            leading: Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(8),
+      body: Container(
+        color: Colors.white,
+        child: recentProducts.isEmpty
+            ? Center(
+                child: Text(
+                  "최근 본 상품이 없습니다.",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              )
+            : ListView.separated(
+                itemCount: recentProducts.length,
+                separatorBuilder: (context, index) => Divider(),
+                itemBuilder: (context, index) {
+                  final product = recentProducts[index];
+                  return ListTile(
+                    leading: Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[300],
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: product['image'] == null
+                          ? Icon(Icons.image, color: Colors.grey)
+                          : Image.asset(product['image'], fit: BoxFit.cover),
+                    ),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "식자재",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: defaultColors['lightGreen'],
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          product['name'],
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              product['discount'],
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: defaultColors['green'],
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              product['price'],
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.timer, size: 14, color: Colors.grey),
+                            SizedBox(width: 4),
+                            Text(
+                              product['time'],
+                              style:
+                                  TextStyle(fontSize: 12, color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    trailing: IconButton(
+                      icon: Icon(Icons.close, color: defaultColors['green']),
+                      onPressed: () => _removeProduct(index),
+                    ),
+                  );
+                },
               ),
-              child: product['image'] == null
-                  ? Icon(Icons.image, color: Colors.grey)
-                  : Image.asset(product['image'], fit: BoxFit.cover),
-            ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "식자재",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                SizedBox(height: 4),
-                Text(
-                  product['name'],
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(height: 4),
-                Row(
-                  children: [
-                    Text(
-                      product['discount'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      product['price'],
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.timer, size: 14, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text(
-                      product['time'],
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: IconButton(
-              icon: Icon(Icons.close, color: Colors.grey),
-              onPressed: () => _removeProduct(index),
-            ),
-          );
-        },
       ),
     );
   }
