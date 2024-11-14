@@ -7,6 +7,7 @@ import 'package:last_nyam/screen/my_page/recent_viewed_products_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 
+// TODO: 프로필 이미지 안나오는 현상 개선하기
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
 
@@ -42,8 +43,9 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 CircleAvatar(
                   radius: 30,
                   backgroundColor: defaultColors['white'],
-                  backgroundImage:
-                      AssetImage('${userState.profileImage}'), // 프로필 이미지 경로
+                  backgroundImage: userState.profileImage != null
+                      ? FileImage(userState.profileImage!) // 선택된 이미지
+                      : AssetImage('assets/image/profile_image.png') as ImageProvider, // 기본 이미지 프로필 이미지 경로
                 ),
                 SizedBox(width: 16),
                 Row(
