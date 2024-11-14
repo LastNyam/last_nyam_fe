@@ -1,20 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: FavoriteStoresScreen(),
-    );
-  }
-}
-
 class FavoriteStoresScreen extends StatelessWidget {
   // 더미 데이터
   final List<Map<String, dynamic>> stores = [
