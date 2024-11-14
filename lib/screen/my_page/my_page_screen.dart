@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:last_nyam/const/colors.dart';
-import 'package:last_nyam/screen/favorite_stores_screen.dart';
-import 'package:last_nyam/screen/profile_edit_screen.dart';
-import 'package:last_nyam/screen/recent_viewed_products_screen.dart';
+import 'package:last_nyam/screen/my_page/favorite_stores_screen.dart';
+import 'package:last_nyam/screen/my_page/profile_edit_screen.dart';
+import 'package:last_nyam/screen/my_page/recent_viewed_products_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 

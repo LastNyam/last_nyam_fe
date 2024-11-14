@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
-import 'package:last_nyam/screen/password_change_screen.dart';
+import 'package:last_nyam/screen/my_page/password_change_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
-import 'package:last_nyam/screen/nickname_change_screen.dart';
+import 'package:last_nyam/screen/my_page/nickname_change_screen.dart';
 
 class ProfileEditScreen extends StatelessWidget {
   @override
