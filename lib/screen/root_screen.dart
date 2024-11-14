@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:last_nyam/screen/home_screen.dart';
 import 'package:last_nyam/screen/map_screen.dart';
 import 'package:last_nyam/screen/order_history_screen.dart';
-import 'package:last_nyam/screen/my_page_screen.dart';
+import 'package:last_nyam/screen/my_page/my_page_screen.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({Key? key}) : super(key: key);

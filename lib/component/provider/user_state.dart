@@ -1,10 +1,11 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 class UserState with ChangeNotifier {
   String password = 'testest';
   String phoneNumber = '010-1111-1111';
   String userName = '컴공피주먹';
-  String profileImage = 'assets/image/profile_image.png';
+  File? profileImage = null;
   int orderCount = 0;
 
   void updatePassword(String newPassword) {
@@ -22,7 +23,7 @@ class UserState with ChangeNotifier {
     notifyListeners();
   }
 
-  void updateProfileImage(String newImage) {
+  void updateProfileImage(File? newImage) {
     profileImage = newImage;
     notifyListeners();
   }
