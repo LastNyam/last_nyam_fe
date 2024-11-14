@@ -5,7 +5,7 @@ class FavoriteStoresScreen extends StatelessWidget {
   // 더미 데이터
   final List<Map<String, dynamic>> stores = [
     {
-      'name': '삼겹분식 옥계점',
+      'name': '삼첩분식 옥계점',
       'temperature': '48.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': true,
@@ -19,7 +19,7 @@ class FavoriteStoresScreen extends StatelessWidget {
       'isAlertOn': true,
     },
     {
-      'name': '절대하기 옥계점',
+      'name': '집더하기 옥계점',
       'temperature': '36.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': true,

@@ -58,7 +58,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
             children: [
               Text(
                 '새로운 닉네임을 입력해주세요',
-                style: TextStyle(fontSize: 16, color: Colors.black),
+                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               TextField(
@@ -122,7 +122,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   ),
                   child: Text(
                     '변경 완료',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
