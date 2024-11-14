@@ -77,6 +77,11 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
+                    _validateCurrentPassword();
+                    if (!_isCurrentPasswordValid) {
+                      return;
+                    }
+
                     String newPassword = _newPasswordController.text.trim();
                     if (newPassword.isNotEmpty && _isValid) {
                       userState.updatePassword(newPassword);
@@ -158,9 +163,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
           ),
           onChanged: (value) {
             print(type);
-            if ('$type' == 'current') {
-              _validateCurrentPassword();
-            } else if ('$type' == 'new') {
+            if ('$type' == 'new') {
               _validateNewPassword();
             } else if ('$type' == 'confirm') {
               _validateConfirmPassword();
@@ -237,9 +240,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
 
   void _validateForm() {
     setState(() {
-      if (_isCurrentPasswordValid &&
-          _isNewPasswordValid &&
-          _isConfirmPasswordValid) {
+      if (_isNewPasswordValid && _isConfirmPasswordValid) {
         _isValid = true;
       }
     });
