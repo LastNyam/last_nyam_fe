@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/favorite_stores_screen.dart';
 import 'package:last_nyam/screen/profile_edit_screen.dart';
+import 'package:last_nyam/screen/recent_viewed_products_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 
@@ -56,28 +57,33 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       ),
                     ),
                     GestureDetector(
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => ProfileEditScreen(),
-                              ));
-                        },
-                        child: Row(
-                          children: [
-                            Text(
-                              '${userState.userName}',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: defaultColors['green'],
-                                fontWeight: FontWeight.bold,
-                              ),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ProfileEditScreen(),
+                          ),
+                        );
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            '${userState.userName}',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: defaultColors['green'],
+                              fontWeight: FontWeight.bold,
                             ),
-                            SizedBox(width: 5),
-                            Icon(Icons.chevron_right,
-                                size: 18, color: defaultColors['lightGreen']),
-                          ],
-                        )),
+                          ),
+                          SizedBox(width: 5),
+                          Icon(
+                            Icons.chevron_right,
+                            size: 18,
+                            color: defaultColors['lightGreen'],
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -145,10 +151,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         color: defaultColors['lightGreen']),
                     onTap: () {
                       Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => FavoriteStoresScreen(),
-                          )
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => FavoriteStoresScreen(),
+                        ),
                       );
                     },
                   ),
@@ -157,7 +163,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     title: Text('최근 본 상품'),
                     trailing: Icon(Icons.chevron_right,
                         color: defaultColors['lightGreen']),
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RecentViewedProductsScreen(),
+                        ),
+                      );
+                    },
                   ),
                   Divider(),
                   ListTile(
