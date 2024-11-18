@@ -32,6 +32,41 @@ class _RecentViewedProductsScreenState
       'price': '9,900원',
       'time': '45분',
     },
+    {
+      'image': null, // 이미지 경로
+      'name': '크리스마스 귀요미 쿠키 세트',
+      'discount': '12%',
+      'price': '9,900원',
+      'time': '45분',
+    },
+    {
+      'image': null, // 이미지 경로
+      'name': '크리스마스 귀요미 쿠키 세트',
+      'discount': '12%',
+      'price': '9,900원',
+      'time': '45분',
+    },
+    {
+      'image': null, // 이미지 경로
+      'name': '크리스마스 귀요미 쿠키 세트',
+      'discount': '12%',
+      'price': '9,900원',
+      'time': '45분',
+    },
+    {
+      'image': null, // 이미지 경로
+      'name': '크리스마스 귀요미 쿠키 세트',
+      'discount': '12%',
+      'price': '9,900원',
+      'time': '45분',
+    },
+    {
+      'image': null, // 이미지 경로
+      'name': '크리스마스 귀요미 쿠키 세트',
+      'discount': '12%',
+      'price': '9,900원',
+      'time': '45분',
+    },
   ];
 
   // 전체 삭제
