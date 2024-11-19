@@ -274,8 +274,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // 알림창 닫기
-                  // 로그아웃 동작 추가
-                  print('로그아웃 처리');
+                  // 탈퇴 동작 추가
+                  print('탈퇴 처리');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: defaultColors['green'],
@@ -284,7 +284,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   minimumSize: Size(double.infinity, 50),
                 ),
-                child: Text('로그아웃', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
+                child: Text('탈퇴', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
               ),
             ],
           ),

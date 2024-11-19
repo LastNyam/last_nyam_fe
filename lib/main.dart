@@ -4,7 +4,7 @@ import 'package:last_nyam/const/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 
-void main() {
+void main() async {
   runApp(
     MultiProvider(
       providers: [
