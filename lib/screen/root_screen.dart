@@ -42,6 +42,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
       backgroundColor: Colors.white,
       // 탭 화면을 보여줄 위젯
       body: TabBarView(
+        physics: const NeverScrollableScrollPhysics(),
         controller: controller,
         children: renderChildren(),
       ),
