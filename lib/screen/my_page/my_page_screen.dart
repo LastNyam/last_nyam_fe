@@ -3,11 +3,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/favorite_stores_screen.dart';
 import 'package:last_nyam/screen/my_page/profile_edit_screen.dart';
+import 'package:last_nyam/screen/my_page/login_screen.dart'; // LoginScreen 추가
 import 'package:last_nyam/screen/my_page/recent_viewed_products_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 
-// TODO: 프로필 이미지 안나오는 현상 개선하기
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({super.key});
 
@@ -52,27 +52,41 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '냠냠이, ',
+                      userState.accessToken == null || userState.accessToken.isEmpty ? '' : '냠냠이, ',
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.normal,
                       ),
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ProfileEditScreen(),
-                          ),
-                        );
+                        if (userState.accessToken == null || userState.accessToken.isEmpty) {
+                          // AccessToken이 없는 경우 로그인 페이지로 이동
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LoginScreen(),
+                              // builder: (context) => ProfileEditScreen(),
+                            ),
+                          );
+                        } else {
+                          // AccessToken이 있는 경우 프로필 편집 화면으로 이동
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ProfileEditScreen(),
+                            ),
+                          );
+                        }
                       },
                       child: Row(
                         children: [
                           Text(
-                            '${userState.userName}',
+                            userState.accessToken == null || userState.accessToken.isEmpty
+                                ? '로그인하고 냠냠 시작하기' // 로그인 메시지
+                                : '${userState.userName}', // 사용자 이름 표시
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               color: defaultColors['green'],
                               fontWeight: FontWeight.bold,
                             ),
@@ -227,7 +241,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // 알림창 닫기
-                  // 로그아웃 동작 추가
                   print('로그아웃 처리');
                 },
                 style: ElevatedButton.styleFrom(
@@ -274,7 +287,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context); // 알림창 닫기
-                  // 탈퇴 동작 추가
                   print('탈퇴 처리');
                 },
                 style: ElevatedButton.styleFrom(

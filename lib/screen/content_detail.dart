@@ -1,36 +1,42 @@
 import 'package:flutter/material.dart';
+import 'home_screen.dart';
 
 class ContentDetail extends StatefulWidget {
-  const ContentDetail({super.key});
+  final Product product; // 전달받은 상품 데이터
+
+  const ContentDetail({super.key, required this.product});
 
   @override
   _ContentDetailState createState() => _ContentDetailState();
 }
 
 class _ContentDetailState extends State<ContentDetail> {
-  bool isLiked = false;// 하트 상태를 저장하는 변수
-  int quantity = 1; //수량을 저장하는 변수
+  bool isLiked = false; // 하트 상태를 저장하는 변수
+  int quantity = 1; // 수량을 저장하는 변수
 
   @override
   Widget build(BuildContext context) {
+    // 할인된 가격 계산
+    final int discountedPrice = (int.parse(widget.product.price.replaceAll(RegExp(r'[^0-9]'), '')) * (100 - int.parse(widget.product.discount.replaceAll('%', '')))) ~/ 100;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
         child: Stack(
           alignment: Alignment.center,
           children: [
-
+            // 뒤로가기 버튼
             Positioned(
-              top: 40, // 상단 위치
-              left: 10, // 왼쪽 위치
+              top: 30,
+              left: 10,
               child: IconButton(
                 onPressed: () {
-                  Navigator.pop(context); // 뒤로가기 동작
+                  Navigator.pop(context);
                 },
                 icon: const Icon(
-                  Icons.arrow_back, // 뒤로가기 아이콘
-                  color: Colors.black, // 아이콘 색상
-                  size: 24, // 아이콘 크기
+                  Icons.arrow_back,
+                  color: Colors.black,
+                  size: 24,
                 ),
               ),
             ),
@@ -44,13 +50,13 @@ class _ContentDetailState extends State<ContentDetail> {
                 child: Stack(
                   children: [
                     Image.asset(
-                      'assets/image/pork_detail.png', // 이미지 경로
+                      widget.product.imagePath, // 상품 이미지
                       fit: BoxFit.cover,
                       width: 375,
                       height: 300,
                     ),
 
-
+                    // 남은 수량
                     Positioned(
                       right: 10,
                       bottom: 10,
@@ -58,15 +64,14 @@ class _ContentDetailState extends State<ContentDetail> {
                         width: 80,
                         height: 25,
                         decoration: BoxDecoration(
-                          color: const Color(0xE5417C4E), // 초록색 배경
+                          color: const Color(0xE5417C4E),
                           borderRadius: BorderRadius.circular(5),
                         ),
-                        child: const Center(
+                        child: Center(
                           child: Text(
-                            '9개 남았습니다',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white, // 텍스트 색상
+                            '${widget.product.amount}개 남았습니다',
+                            style: const TextStyle(
+                              color: Colors.white,
                               fontSize: 10,
                               fontWeight: FontWeight.w400,
                             ),
@@ -74,259 +79,177 @@ class _ContentDetailState extends State<ContentDetail> {
                         ),
                       ),
                     ),
-
-
                   ],
                 ),
               ),
             ),
 
-            // 고령축산 및 하트 아이콘
+            // 상품 정보 및 예약 버튼
             Positioned(
-              top: 310,
+              top: 320,
+              left: 16,
+              right: 16,
               child: Column(
                 children: [
-                  Container(
-                    width: 328,
-                    height: 28,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: 10,
-                          top: 5,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                isLiked = !isLiked; // 하트 상태 토글
-                              });
-                            },
-                            child: Icon(
-                              isLiked ? Icons.favorite : Icons.favorite_border,
-                              color: isLiked ? Colors.red : Colors.grey,
-                              size: 20,
-                            ),
-                          ),
+                  // Producer와 하트 아이콘
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Producer
+                      Text(
+                        widget.product.producer,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
                         ),
+                      ),
 
-                        const Positioned(
-                          left: 21,
-                          top: 2,
-                          child: Text(
-                            '고령축산',
-                            style: TextStyle(
-                              color: Color(0xFF262626),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
+                      // 하트 아이콘
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isLiked = !isLiked; // 하트 상태 토글
+                          });
+                        },
+                        child: Icon(
+                          isLiked ? Icons.favorite : Icons.favorite_border,
+                          color: isLiked ? Colors.red : Colors.grey,
+                          size: 28,
                         ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
 
-                        Positioned(
-                          left: 2,
-                          top: 1,
-                          child: Container(
-                            width: 14,
-                            height: 14,
-                            decoration: const ShapeDecoration(
-                              color: Color(0xFFF2F2F2),
-                              shape: OvalBorder(),
-                            ),
-                          ),
-                        ),
-
-
-                      ],
+                  // 상품 유형
+                  Text(
+                    widget.product.type == 'ingredients' ? '식자재' : '완제품',
+                    style: const TextStyle(
+                      color: Color(0xFFB9C6BC),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w400,
                     ),
+                  ),
+                  const SizedBox(height: 5),
+
+                  // 상품 이름
+                  Text(
+                    widget.product.title, // 상품 이름
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // 할인율, 할인된 가격, 원래 가격
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 할인율
+                      Text(
+                        widget.product.discount, // 할인율
+                        style: const TextStyle(
+                          color: Color(0xFF417C4E),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // 할인된 가격
+                      Text(
+                        '${discountedPrice.toString()}원',
+                        style: const TextStyle(
+                          color: Color(0xFF262626),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // 원래 가격 (취소선)
+                      Text(
+                        '${widget.product.price}원',
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
+                          decoration: TextDecoration.lineThrough, // 취소선
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 15),
 
+                  // 상품 설명
+                  Text(
+                    widget.product.detail,
+                    style: const TextStyle(
+                      color: Color(0xFF262626),
+                      fontSize: 10,
+                      fontWeight: FontWeight.w300,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
 
-
-                  // 상품 정보
+                  // 추천 레시피 섹션
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // 상품 태그
                       const Text(
-                        '식자재',
+                        '추천 레시피',
                         style: TextStyle(
                           color: Color(0xFFB9C6BC),
                           fontSize: 10,
                           fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(height: 5),
-
-
-
-
-
-
-
-
-                      // 상품 이름 및 타이머 정보
+                      const SizedBox(height: 10),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
-                                '국내산 돼지고기',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Text(
-                                    '10%',
-                                    style: TextStyle(
-                                      color: Color(0xFF417C4E),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    '10,000원',
-                                    style: TextStyle(
-                                      color: Color(0xFF262626),
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          const SizedBox(width: 20),
-
-
-
-
-
-
-
-                          // 타이머 아이콘과 시간
-                          Row(
-                            children: const [
-                              Icon(Icons.timer, size: 16, color: Colors.black),
-                              SizedBox(width: 5),
-                              Text(
-                                '11분',
-                                style: TextStyle(
-                                  color: Color(0xFF262626),
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
+                          _buildRecipeIcon('AI', Icons.smart_toy),
+                          const SizedBox(width: 10),
+                          _buildRecipeIcon('요리사', Icons.restaurant_menu),
+                          const SizedBox(width: 10),
+                          _buildRecipeIcon('좋아요', Icons.thumb_up),
                         ],
                       ),
-                      const SizedBox(height: 15),
-
-
-
-
-                      // 상품 설명
-                      const Text(
-                        '어제 도축한 돼지고기 입니다. 지방과 살의 비율이 적절해서 드시기 좋습니다~',
-                        style: TextStyle(
-                          color: Color(0xFF262626),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w300,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 15),
-
-
-
-
-                      // 추천 레시피 섹션
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const Text(
-                            '추천 레시피',
-                            style: TextStyle(
-                              color: Color(0xFFB9C6BC),
-                              fontWeight: FontWeight.w400,
-                              fontSize: 10,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _buildRecipeIcon('AI', Icons.smart_toy), // AI 아이콘
-                              const SizedBox(width: 10),
-                              _buildRecipeIcon('요리사', Icons.restaurant_menu), // 요리 아이콘
-                              const SizedBox(width: 10),
-                              _buildRecipeIcon('좋아요', Icons.thumb_up), // 좋아요 아이콘
-                            ],
-                          ),
-                        ],
-                      ),
-
-
-
                     ],
                   ),
+                  const SizedBox(height: 20),
 
+                  // 예약하기 버튼
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width - 32,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        _showPurchaseModal(context); // 예약하기 클릭 시 모달 실행
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF417C4E),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                      ),
+                      child: const Text(
+                        '예약하기',
+                        style: TextStyle(
+                          color: Color(0xFFF2F2F2),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
-
-
-
-
-
-
-
-
-            // 하단 예약 버튼
-            Positioned(
-              bottom: 20,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width - 32,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      _showPurchaseModal(context); // 예약하기 버튼 클릭 시 모달 실행
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF417C4E),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                    ),
-                    child: const Text(
-                      '예약하기',
-                      style: TextStyle(
-                        color: Color(0xFFF2F2F2),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-
-
-
-
-
-
           ],
         ),
       ),
@@ -337,11 +260,11 @@ class _ContentDetailState extends State<ContentDetail> {
   // 추천 레시피 아이콘 빌더
   Widget _buildRecipeIcon(String label, IconData icon) {
     return Container(
-      width: 50, // 버튼의 크기 설정
+      width: 50,
       height: 50,
       decoration: BoxDecoration(
-        border: Border.all(width: 1, color: const Color(0xFF417C4E)), // 테두리 설정
-        borderRadius: BorderRadius.circular(8), // 둥근 모서리 설정
+        border: Border.all(width: 1, color: const Color(0xFF417C4E)),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -349,24 +272,21 @@ class _ContentDetailState extends State<ContentDetail> {
           Icon(
             icon,
             size: 20,
-            color: const Color(0xFF417C4E), // 아이콘 색상
+            color: const Color(0xFF417C4E),
           ),
-          const SizedBox(height: 5), // 아이콘과 텍스트 간격
+          const SizedBox(height: 5),
           Text(
             label,
             style: const TextStyle(
               fontSize: 10,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF417C4E), // 텍스트 색상
+              color: Color(0xFF417C4E),
             ),
           ),
         ],
       ),
     );
   }
-
-
-
 
   void _showPurchaseModal(BuildContext context) {
     showModalBottomSheet(
@@ -400,18 +320,18 @@ class _ContentDetailState extends State<ContentDetail> {
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            '국내산 돼지고기',
-                            style: TextStyle(
+                            widget.product.title,
+                            style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(height: 5),
+                          const SizedBox(height: 5),
                           Text(
-                            '10,000원',
-                            style: TextStyle(
+                            widget.product.price,
+                            style: const TextStyle(
                               fontSize: 14,
                               color: Colors.grey,
                             ),
@@ -422,15 +342,15 @@ class _ContentDetailState extends State<ContentDetail> {
                         children: [
                           // - 버튼
                           IconButton(
-                            onPressed: () {
-                              if (quantity > 1) {
-                                setState(() {
-                                  quantity--;
-                                });
-                              }
-                            },
+                            onPressed: quantity > 1
+                                ? () {
+                              setState(() {
+                                quantity--;
+                              });
+                            }
+                                : null, // 버튼 비활성화
                             icon: const Icon(Icons.remove_circle_outline),
-                            color: Colors.grey,
+                            color: quantity > 1 ? Colors.grey : Colors.grey[300],
                           ),
 
                           // 수량 표시
@@ -441,13 +361,17 @@ class _ContentDetailState extends State<ContentDetail> {
 
                           // + 버튼
                           IconButton(
-                            onPressed: () {
+                            onPressed: quantity < widget.product.amount
+                                ? () {
                               setState(() {
                                 quantity++;
                               });
-                            },
+                            }
+                                : null, // 버튼 비활성화
                             icon: const Icon(Icons.add_circle_outline),
-                            color: Colors.grey,
+                            color: quantity < widget.product.amount
+                                ? Colors.grey
+                                : Colors.grey[300], // 비활성화 색상
                           ),
                         ],
                       ),
@@ -539,8 +463,15 @@ class _ContentDetailState extends State<ContentDetail> {
                     ),
                     ElevatedButton(
                       onPressed: () {
-                        Navigator.pop(context); // 다이얼로그 닫기
-                        Navigator.popUntil(context, (route) => route.isFirst); // 첫 번째 화면으로 이동
+                        setState(() {
+                          // 예약 상태 업데이트
+                          widget.product.isReserved = true;
+                          widget.product.amount -= quantity; // 수량 감소
+                        });
+
+                        // 다이얼로그 닫기 전에 홈 화면 상태 갱신
+                        Navigator.pop(context, widget.product);
+                        Navigator.pop(context); // ContentDetail 화면 닫기
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF417C4E),
@@ -556,7 +487,6 @@ class _ContentDetailState extends State<ContentDetail> {
                         ),
                       ),
                     ),
-
                   ],
                 ),
               ],
@@ -566,8 +496,6 @@ class _ContentDetailState extends State<ContentDetail> {
       },
     );
   }
-
-
 
 
 }
