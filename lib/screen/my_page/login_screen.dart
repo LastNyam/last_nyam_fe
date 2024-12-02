@@ -208,13 +208,15 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await _dio.post(
         '$baseUrl/auth/login',
         data: {
-          'phoneNumber': _phoneNumberController.text.trim(),
-          'password': _passwordController.text.trim(),
+          'phoneNumber': _phoneNumberController.text,
+          'password': _passwordController.text,
         },
       );
 
-      if (response.statusCode == 200 && response.data['token'] != null) {
-        String token = response.data['token'];
+      print(response.data['data']);
+
+      if (response.statusCode == 200 && response.data['data']['token'] != null) {
+        String token = response.data['data']['token'];
 
         // Save token in secure storage
         await _storage.write(key: 'authToken', value: token);
