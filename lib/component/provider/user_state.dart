@@ -7,6 +7,7 @@ class UserState with ChangeNotifier {
   String userName = '컴공피주먹';
   File? profileImage = null;
   int orderCount = 0;
+  String accessToken = '';
 
   void updatePassword(String newPassword) {
     password = newPassword;
@@ -30,6 +31,11 @@ class UserState with ChangeNotifier {
 
   void updateOrderCount(int newCount) {
     orderCount = newCount;
+    notifyListeners();
+  }
+
+  void updateAccessToken(String newAccessToken) {
+    accessToken = newAccessToken;
     notifyListeners();
   }
 }

@@ -240,9 +240,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
 
   void _validateForm() {
     setState(() {
-      if (_isNewPasswordValid && _isConfirmPasswordValid) {
-        _isValid = true;
-      }
+      _isValid = _isNewPasswordValid && _isConfirmPasswordValid;
     });
   }
 }

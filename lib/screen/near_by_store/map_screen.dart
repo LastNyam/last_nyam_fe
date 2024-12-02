@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:last_nyam/const/colors.dart';
+import 'package:last_nyam/screen/near_by_store/loading.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -12,19 +14,34 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   LatLng _currentPosition = const LatLng(37.5665, 126.9780); // 초기 위치 (서울)
+  bool _isRendering = false;
+  bool _isLoading = true;
   final List<Map<String, dynamic>> _dummyStores = [
-    {"name": "삼겹분식", "position": LatLng(37.5705, 126.9821)},
-    {"name": "맛쟁이과일야채", "position": LatLng(37.5647, 126.9752)},
-    {"name": "라공푸마라탕", "position": LatLng(37.5613, 126.9798)},
-    {"name": "박가네과일", "position": LatLng(37.5680, 126.9840)},
-    {"name": "고령축산", "position": LatLng(37.5624, 126.9732)},
+    {"name": "삼첩분식", "position": LatLng(36.1455956, 128.3926275)},
+    {"name": "멋쟁이과일야채", "position": LatLng(36.1455864, 128.3926456)},
+    {"name": "라쿵푸마라탕", "position": LatLng(36.1455856, 128.3926487)},
+    {"name": "박가네과일", "position": LatLng(36.1455974, 128.3926217)},
+    {"name": "고령축산", "position": LatLng(36.1455996, 128.3926515)},
   ];
   final List<Marker> _storeMarkers = [];
+  // final Circle circle = Circle(
+  //   circleId: CircleId('Me'),
+  //   center:
+  // );
 
   @override
   void initState() {
     super.initState();
+    _initializeMap();
+  }
+
+  Future<void> _initializeMap() async {
+    // 1초 동안 로딩 화면 유지
     _getCurrentLocation();
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() {
+      _isRendering = true;
+    });
   }
 
   void _getCurrentLocation() async {
@@ -37,7 +54,16 @@ class _MapScreenState extends State<MapScreen> {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
 
+      await _mapController.animateCamera(
+        CameraUpdate.newLatLng(_currentPosition),
+      );
+      print('현 위치: ${position.latitude}, ${position.longitude}');
+
       _addNearbyStores();
+
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -95,19 +121,22 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GoogleMap(
+      body: _isLoading == true && _isRendering == false
+          ? LoadingScreen()
+          : GoogleMap(
         initialCameraPosition: CameraPosition(
           target: _currentPosition,
           zoom: 14,
         ),
+        myLocationEnabled: true,
+        myLocationButtonEnabled: false,
+        mapToolbarEnabled: false,
+        compassEnabled: true,
+        rotateGesturesEnabled: false,
+        zoomControlsEnabled: false,
+        buildingsEnabled: false,
         markers: {
           ..._storeMarkers,
-          Marker(
-            markerId: MarkerId("current_location"),
-            position: _currentPosition,
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            infoWindow: InfoWindow(title: "내 위치"),
-          ),
         },
         onMapCreated: (controller) {
           _mapController = controller;
@@ -119,7 +148,15 @@ class _MapScreenState extends State<MapScreen> {
             CameraUpdate.newLatLng(_currentPosition),
           );
         },
-        child: const Icon(Icons.my_location),
+        backgroundColor: Colors.white, // 버튼 배경색
+        child: Icon(
+          Icons.my_location, // 아이콘 모양
+          color: defaultColors['green'], // 아이콘 색상
+          size: 32, // 아이콘 크기
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(50), // 버튼을 완전한 원형으로 설정
+        ),
       ),
     );
   }
