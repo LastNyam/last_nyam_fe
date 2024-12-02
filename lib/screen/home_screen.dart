@@ -58,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
       discount: '34%',
       price: '2,000원',
       timeLeft: '3시간',
-      imagePath: 'assets/image/tteopokki_card.jpg',
+      imagePath: 'assets/image/tteopokki_card.png',
       detail: '둘이 먹다가 둘다 죽어도 모를 맛입니다~',
       amount: 3,
       producer : '벽종원의 시장정복',
