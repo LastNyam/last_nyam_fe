@@ -192,11 +192,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (userResponse.statusCode == 200) {
           final userState = Provider.of<UserState>(context, listen: false);
-          userState.updateUserName(response.data['data']['nickname']);
-          userState.updatePhoneNumber(response.data['data']['phoneNumber']);
+          userState.updateUserName(userResponse.data['data']['nickname']);
+          userState.updatePhoneNumber(userResponse.data['data']['phoneNumber']);
           userState
-              .updateAcceptMarketing(response.data['data']['acceptMarketing']);
-          Uint8List? profileImage = Uint8List.fromList(base64Decode(response.data['data']['profileImage']));
+              .updateAcceptMarketing(userResponse.data['data']['acceptMarketing']);
+          Uint8List? profileImage = Uint8List.fromList(base64Decode(userResponse.data['data']['profileImage']));
           userState.updateProfileImage(profileImage);
           userState.updateIsLogin(true);
         } else {
