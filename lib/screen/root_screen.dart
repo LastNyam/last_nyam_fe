@@ -1,8 +1,17 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:last_nyam/screen/home_screen.dart';
 import 'package:last_nyam/screen/near_by_store/map_screen.dart';
 import 'package:last_nyam/screen/order_history_screen.dart';
 import 'package:last_nyam/screen/my_page/my_page_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../component/provider/user_state.dart';
 
 class RootScreen extends StatefulWidget {
   const RootScreen({Key? key}) : super(key: key);
@@ -14,6 +23,8 @@ class RootScreen extends StatefulWidget {
 class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
   // 사용할 TabController 선언
   TabController? controller;
+  final _storage = const FlutterSecureStorage();
+  final Dio _dio = Dio();
 
   @override
   void initState() {
@@ -22,6 +33,44 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
     controller = TabController(length: 4, vsync: this);
 
     controller!.addListener(tabListener);
+    _checkAutoLogin();
+
+  }
+
+  // Check for auto-login
+  Future<void> _checkAutoLogin() async {
+    String? token = await _storage.read(key: 'authToken');
+    if (token != null) {
+      _attemptAutoLogin(token);
+    } else {
+      print('로그인 기록 없음');
+    }
+  }
+
+  // Attempt auto-login with saved token
+  Future<void> _attemptAutoLogin(String token) async {
+    final baseUrl = dotenv.env['BASE_URL']!;
+    try {
+      final response = await _dio.get(
+        '$baseUrl/auth/my-info',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        final userState = Provider.of<UserState>(context, listen: false);
+        userState.updateUserName(response.data['data']['nickname']);
+        userState.updatePhoneNumber(response.data['data']['phoneNumber']);
+        userState
+            .updateAcceptMarketing(response.data['data']['acceptMarketing']);
+        Uint8List? profileImage = Uint8List.fromList(base64Decode(response.data['data']['profileImage']));
+        userState.updateProfileImage(profileImage);
+        userState.updateIsLogin(true);
+      } else {
+        await _storage.delete(key: 'authToken');
+      }
+    } catch (e) {
+      print('Auto-login failed: $e');
+    }
   }
 
   // listener로 사용할 함수
@@ -38,6 +87,8 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+
     return Scaffold(
       backgroundColor: Colors.white,
       // 탭 화면을 보여줄 위젯

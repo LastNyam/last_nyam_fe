@@ -1,9 +1,12 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/favorite_stores_screen.dart';
 import 'package:last_nyam/screen/my_page/profile_edit_screen.dart';
-import 'package:last_nyam/screen/my_page/login_screen.dart'; // LoginScreen 추가
+import 'package:last_nyam/screen/my_page/login_screen.dart';
 import 'package:last_nyam/screen/my_page/recent_viewed_products_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
@@ -16,6 +19,9 @@ class MyPageScreen extends StatefulWidget {
 }
 
 class _MyPageScreenState extends State<MyPageScreen> {
+  final _storage = const FlutterSecureStorage();
+  final _dio = Dio();
+
   @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
@@ -44,15 +50,16 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   radius: 30,
                   backgroundColor: defaultColors['white'],
                   backgroundImage: userState.profileImage != null
-                      ? FileImage(userState.profileImage!) // 선택된 이미지
-                      : AssetImage('assets/image/profile_image.png') as ImageProvider, // 기본 이미지 프로필 이미지 경로
+                      ? MemoryImage(userState.profileImage!)
+                      : AssetImage('assets/image/profile_image.png')
+                          as ImageProvider, // 기본 이미지 프로필 이미지 경로
                 ),
                 SizedBox(width: 16),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      userState.accessToken == null || userState.accessToken.isEmpty ? '' : '냠냠이, ',
+                      !userState.isLogin ? '' : '냠냠이, ',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.normal,
@@ -60,7 +67,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        if (userState.accessToken == null || userState.accessToken.isEmpty) {
+                        if (!userState.isLogin) {
                           // AccessToken이 없는 경우 로그인 페이지로 이동
                           Navigator.push(
                             context,
@@ -82,7 +89,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       child: Row(
                         children: [
                           Text(
-                            userState.accessToken == null || userState.accessToken.isEmpty
+                            !userState.isLogin
                                 ? '로그인하고 냠냠 시작하기' // 로그인 메시지
                                 : '${userState.userName}', // 사용자 이름 표시
                             style: TextStyle(
@@ -189,21 +196,24 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     },
                   ),
                   Divider(),
-                  ListTile(
-                    leading: Icon(Icons.logout, color: defaultColors['black']),
-                    title: Text('로그아웃'),
-                    trailing: Icon(Icons.chevron_right,
-                        color: defaultColors['lightGreen']),
-                    onTap: () => _showLogoutDialog(context),
-                  ),
-                  ListTile(
-                    leading: Icon(Icons.person_remove_outlined,
-                        color: defaultColors['black']),
-                    title: Text('탈퇴'),
-                    trailing: Icon(Icons.chevron_right,
-                        color: defaultColors['lightGreen']),
-                    onTap: () => _showWithdrawalDialog(context),
-                  ),
+                  if (userState.isLogin)
+                    ListTile(
+                      leading:
+                          Icon(Icons.logout, color: defaultColors['black']),
+                      title: Text('로그아웃'),
+                      trailing: Icon(Icons.chevron_right,
+                          color: defaultColors['lightGreen']),
+                      onTap: () => _showLogoutDialog(context),
+                    ),
+                  if (userState.isLogin)
+                    ListTile(
+                      leading: Icon(Icons.person_remove_outlined,
+                          color: defaultColors['black']),
+                      title: Text('탈퇴'),
+                      trailing: Icon(Icons.chevron_right,
+                          color: defaultColors['lightGreen']),
+                      onTap: () => _showWithdrawalDialog(context),
+                    ),
                 ],
               ),
             ),
@@ -214,6 +224,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   void _showLogoutDialog(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -227,7 +239,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.keyboard_arrow_down_sharp, size: 36.0, color: defaultColors['black']),
+                icon: Icon(Icons.keyboard_arrow_down_sharp,
+                    size: 36.0, color: defaultColors['black']),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -239,9 +252,10 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // 알림창 닫기
-                  print('로그아웃 처리');
+                onPressed: () async {
+                  await _storage.delete(key: 'authToken');
+                  userState.initState();
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: defaultColors['green'],
@@ -250,7 +264,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   minimumSize: Size(double.infinity, 50),
                 ),
-                child: Text('로그아웃', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
+                child: Text(
+                  '로그아웃',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: defaultColors['white'],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),
@@ -260,6 +281,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
   }
 
   void _showWithdrawalDialog(BuildContext context) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -273,7 +296,8 @@ class _MyPageScreenState extends State<MyPageScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
-                icon: Icon(Icons.keyboard_arrow_down_sharp, size: 36.0, color: defaultColors['black']),
+                icon: Icon(Icons.keyboard_arrow_down_sharp,
+                    size: 36.0, color: defaultColors['black']),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -285,9 +309,26 @@ class _MyPageScreenState extends State<MyPageScreen> {
               ),
               SizedBox(height: 20),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context); // 알림창 닫기
-                  print('탈퇴 처리');
+                onPressed: () async {
+                  try {
+                    final baseUrl = dotenv.env['BASE_URL'];
+                    String? token = await _storage.read(key: 'authToken');
+                    final response = await _dio.delete(
+                      '$baseUrl/auth/signout',
+                      options: Options(
+                        headers: {'Authorization': 'Bearer $token'},
+                      ),
+                    );
+
+                    if (response.statusCode == 200) {
+                      await _storage.delete(key: 'authToken');
+                      userState.initState();
+                    }
+                  } catch (e) {
+                    print('회원 탈퇴 실패: $e');
+                  }
+
+                  Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: defaultColors['green'],
@@ -296,7 +337,14 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ),
                   minimumSize: Size(double.infinity, 50),
                 ),
-                child: Text('탈퇴', style: TextStyle(fontSize: 16, color: defaultColors['white'], fontWeight: FontWeight.bold)),
+                child: Text(
+                  '탈퇴',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: defaultColors['white'],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ],
           ),

@@ -5,6 +5,9 @@ import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/screen/my_page/nickname_change_screen.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'dart:io';
 
 class ProfileEditScreen extends StatefulWidget {
@@ -16,7 +19,8 @@ class ProfileEditScreen extends StatefulWidget {
 
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
-  File? _profileImage; // 선택된 프로필 이미지
+  final _storage = const FlutterSecureStorage();
+  final _dio = Dio();
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +64,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       radius: 50,
                       backgroundColor: defaultColors['white'],
                       backgroundImage: userState.profileImage != null
-                          ? FileImage(userState.profileImage!) // 선택된 이미지
-                          : AssetImage('assets/image/profile_image.png') as ImageProvider, // 기본 이미지 프로필 이미지 경로
+                          ? MemoryImage(userState.profileImage!) // 선택된 이미지
+                          : AssetImage(
+                          'assets/image/profile_image.png') as ImageProvider, // 기본 이미지 프로필 이미지 경로
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -103,8 +108,9 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => NicknameChangeScreen(
-                                  currentNickname: userState.userName),
+                              builder: (context) =>
+                                  NicknameChangeScreen(
+                                      currentNickname: userState.userName),
                             ));
                       },
                       child: Row(
@@ -160,14 +166,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   // 이미지 선택 동작
   Future<void> _pickImageFromGallery() async {
     final userState = Provider.of<UserState>(context, listen: false);
+    final baseUrl = dotenv.env['BASE_URL']!;
     final ImagePicker _picker = ImagePicker();
     final XFile? pickedImage =
-        await _picker.pickImage(source: ImageSource.gallery);
+    await _picker.pickImage(source: ImageSource.gallery);
 
-    print('프사경로');
+    MultipartFile file = await MultipartFile.fromFile(
+      pickedImage!.path,
+    );
+
+    // FormData 생성
+    FormData formData = FormData.fromMap({
+      'file': file, // 서버에서 요구하는 필드 이름 확인
+    });
+
     print(pickedImage!.path);
-    if (pickedImage != null) {
-      userState.updateProfileImage(File(pickedImage.path));
+    String? token = await _storage.read(key: 'authToken');
+    try {
+      final response = await _dio.post(
+        '$baseUrl/auth/profile-image',
+        data: formData,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      // if (response.statusCode == 200) {
+      //   userState.updateProfileImage();
+      // }
+    } catch (e) {
+      print('이미지 업롣으 에러: $e');
     }
   }
 
@@ -197,7 +223,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
               SizedBox(height: 16),
               ListTile(
-                leading: Icon(Icons.photo_library, color: defaultColors['green']),
+                leading: Icon(
+                    Icons.photo_library, color: defaultColors['green']),
                 title: Text('앨범에서 사진 선택'),
                 onTap: () {
                   Navigator.pop(context); // 옵션 창 닫기
