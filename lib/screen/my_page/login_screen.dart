@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
@@ -189,9 +192,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
         if (userResponse.statusCode == 200) {
           final userState = Provider.of<UserState>(context, listen: false);
-          userState.updateUserName(userResponse.data['data']['nickname']);
-          userState.updatePhoneNumber(userResponse.data['data']['phoneNumber']);
-          userState.updateAcceptMarketing(userResponse.data['data']['acceptMarketing']);
+          userState.updateUserName(response.data['data']['nickname']);
+          userState.updatePhoneNumber(response.data['data']['phoneNumber']);
+          userState
+              .updateAcceptMarketing(response.data['data']['acceptMarketing']);
+          Uint8List? profileImage = Uint8List.fromList(base64Decode(response.data['data']['profileImage']));
+          userState.updateProfileImage(profileImage);
+          userState.updateIsLogin(true);
         } else {
           await _storage.delete(key: 'authToken');
         }
@@ -236,7 +243,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       String password = _passwordController.text;
 
-      if (password != 'dswvgw1234') {
+      if (password == 'dswvgw1234') {
         _isPasswordValid = true;
         _passwordError = null;
       } else {
