@@ -26,45 +26,6 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _passwordError;
 
   @override
-  void initState() {
-    super.initState();
-    _checkAutoLogin();
-  }
-
-  // Check for auto-login
-  Future<void> _checkAutoLogin() async {
-    String? token = await _storage.read(key: 'authToken');
-    if (token != null) {
-      _attemptAutoLogin(token);
-    }
-  }
-
-  // Attempt auto-login with saved token
-  Future<void> _attemptAutoLogin(String token) async {
-    final baseUrl = dotenv.env['BASE_URL']!;
-    try {
-      final response = await _dio.get(
-        '$baseUrl/auth/my-info',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      if (response.statusCode == 200) {
-        // Update user state
-        final userState = Provider.of<UserState>(context, listen: false);
-        userState.updateUserName(response.data['data']['nickname']);
-        userState.updatePhoneNumber(response.data['data']['phoneNumber']);
-        userState.updateAcceptMarketing(response.data['data']['acceptMarketing']);
-        userState.updateProfileImage(response.data['data']['profileImage']);
-        userState.updateIsLogin(true);
-      } else {
-        await _storage.delete(key: 'authToken');
-      }
-    } catch (e) {
-      print('Auto-login failed: $e');
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context, listen: false);
 
