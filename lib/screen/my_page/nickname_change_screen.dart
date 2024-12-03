@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
@@ -28,6 +31,8 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
   @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
+    final _dio = Dio();
+    final _storage = const FlutterSecureStorage();
 
     return Scaffold(
       appBar: AppBar(
@@ -58,7 +63,10 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
             children: [
               Text(
                 '새로운 닉네임을 입력해주세요',
-                style: TextStyle(fontSize: 16, color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
               TextField(
@@ -102,12 +110,28 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
                     String newNickname = _nicknameController.text.trim();
                     if (newNickname.isNotEmpty && _isValid) {
-                      userState.updateUserName(newNickname);
-                      print('닉네임 변경 완료: $newNickname');
-                      Navigator.pop(context); // 변경 후 이전 화면으로 이동
+                      try {
+                        final baseUrl = dotenv.env['BASE_URL'];
+                        String? token = await _storage.read(key: 'authToken');
+                        final response = await _dio.patch(
+                          '$baseUrl/auth/nickname',
+                          data: {'nickname': newNickname},
+                          options: Options(
+                            headers: {'Authorization': 'Bearer $token'},
+                          ),
+                        );
+
+                        if (response.statusCode == 200) {
+                          userState.updateUserName(newNickname);
+                          print('닉네임 변경 완료: $newNickname');
+                          Navigator.pop(context); // 변경 후 이전 화면으로 이동
+                        }
+                      } catch (e) {
+                        print('닉네임 변경 실패: $e');
+                      }
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -122,7 +146,10 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   ),
                   child: Text(
                     '변경 완료',
-                    style: TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

@@ -16,7 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _phoneNumberController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _storage = const FlutterSecureStorage(); // Secure Storage instance
+  final _storage = const FlutterSecureStorage();
   final Dio _dio = Dio();
 
   bool _isPhoneNumberValid = false;
@@ -24,45 +24,6 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isValid = false;
   String? _phoneNumberError;
   String? _passwordError;
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAutoLogin();
-  }
-
-  // Check for auto-login
-  Future<void> _checkAutoLogin() async {
-    String? token = await _storage.read(key: 'authToken');
-    if (token != null) {
-      _attemptAutoLogin(token);
-    }
-  }
-
-  // Attempt auto-login with saved token
-  Future<void> _attemptAutoLogin(String token) async {
-    final baseUrl = dotenv.env['BASE_URL']!;
-    try {
-      final response = await _dio.get(
-        '$baseUrl/auto-login',
-        options: Options(headers: {'Authorization': 'Bearer $token'}),
-      );
-
-      if (response.statusCode == 200) {
-        // Update user state
-        final userState = Provider.of<UserState>(context, listen: false);
-        userState.updatePhoneNumber(response.data['phoneNumber']);
-        userState.updateAccessToken(token);
-
-        // Navigate to main screen
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        await _storage.delete(key: 'authToken');
-      }
-    } catch (e) {
-      print('Auto-login failed: $e');
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,20 +169,32 @@ class _LoginScreenState extends State<LoginScreen> {
       final response = await _dio.post(
         '$baseUrl/auth/login',
         data: {
-          'phoneNumber': _phoneNumberController.text.trim(),
-          'password': _passwordController.text.trim(),
+          'phoneNumber': _phoneNumberController.text,
+          'password': _passwordController.text,
         },
       );
 
-      if (response.statusCode == 200 && response.data['token'] != null) {
-        String token = response.data['token'];
+      print(response.data['data']);
+
+      if (response.statusCode == 200 && response.data['data']['token'] != null) {
+        String token = response.data['data']['token'];
 
         // Save token in secure storage
         await _storage.write(key: 'authToken', value: token);
 
-        // Update user state
-        userState.updatePhoneNumber(_phoneNumberController.text.trim());
-        userState.updateAccessToken(token);
+        final userResponse = await _dio.get(
+          '$baseUrl/auth/my-info',
+          options: Options(headers: {'Authorization': 'Bearer $token'})
+        );
+
+        if (userResponse.statusCode == 200) {
+          final userState = Provider.of<UserState>(context, listen: false);
+          userState.updateUserName(userResponse.data['data']['nickname']);
+          userState.updatePhoneNumber(userResponse.data['data']['phoneNumber']);
+          userState.updateAcceptMarketing(userResponse.data['data']['acceptMarketing']);
+        } else {
+          await _storage.delete(key: 'authToken');
+        }
 
         // Navigate to main screen
         Navigator.pop(context);
@@ -263,12 +236,12 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       String password = _passwordController.text;
 
-      if (password.length >= 6) {
+      if (password != 'dswvgw1234') {
         _isPasswordValid = true;
         _passwordError = null;
       } else {
         _isPasswordValid = false;
-        _passwordError = '비밀번호는 최소 6자리여야 합니다.';
+        _passwordError = '비밀번호가 일치하지 않습니다.';
       }
     });
 
@@ -277,7 +250,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _validateForm() {
     setState(() {
-      _isValid = _isPhoneNumberValid && _isPasswordValid;
+      _isValid = _isPhoneNumberValid;
     });
   }
 }
