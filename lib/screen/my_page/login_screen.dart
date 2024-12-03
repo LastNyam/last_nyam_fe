@@ -233,10 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool validatePhoneNumber(String phoneNumber) {
-    RegExp phonenumberRegex = RegExp(
+    RegExp phoneNumberRegex = RegExp(
       r'^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$',
     );
-    return phonenumberRegex.hasMatch(phoneNumber);
+    return phoneNumberRegex.hasMatch(phoneNumber);
   }
 
   void _validatePassword() {
