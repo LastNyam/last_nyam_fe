@@ -31,23 +31,24 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
     final userState = Provider.of<UserState>(context, listen: false);
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "비밀번호 변경",
-            style: TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          centerTitle: true,
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back_ios, size: 16, color: Colors.black),
-            onPressed: () {
-              Navigator.pop(context);
-            },
-          ),
+      appBar: AppBar(
+        title: Text(
+          "비밀번호 변경",
+          style: TextStyle(
+              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
         ),
-        body: LayoutBuilder(builder: (context, constrains) {
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 16, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
+      body: LayoutBuilder(
+        builder: (context, constrains) {
           return SingleChildScrollView(
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -101,6 +102,14 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                               String newPassword =
                                   _newPasswordController.text.trim();
                               if (newPassword.isNotEmpty && _isValid) {
+                                // try {
+                                //   final baseUrl = dotenv.env['BASE_URL'];
+                                //   String? token = await _storage.read(key: 'authToken');
+                                //
+                                //   final response = await _dio.patch('$baseUrl/auth/password', data: {'oldPassword'})
+                                // } catch(e) {
+                                //   print('비밀번호 변경 실패');
+                                // }
                                 userState.updatePassword(newPassword);
                                 print('비밀번호 변경 완료: $newPassword');
                                 Navigator.pop(context); // 변경 후 이전 화면으로 이동
@@ -130,7 +139,9 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
               ),
             ),
           );
-        }));
+        },
+      ),
+    );
   }
 
   Widget _buildPasswordField({
@@ -204,34 +215,38 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   }
 
   void _validateCurrentPassword() {
-    setState(() {
-      String currentPassword = _currentPasswordController.text;
-      final userState = Provider.of<UserState>(context, listen: false);
+    setState(
+      () {
+        String currentPassword = _currentPasswordController.text;
+        final userState = Provider.of<UserState>(context, listen: false);
 
-      if (currentPassword == userState.password) {
-        _isCurrentPasswordValid = true;
-        _currentPasswordError = null;
-      } else {
-        _isCurrentPasswordValid = false;
-        _currentPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
-      }
-    });
+        if (currentPassword == userState.password) {
+          _isCurrentPasswordValid = true;
+          _currentPasswordError = null;
+        } else {
+          _isCurrentPasswordValid = false;
+          _currentPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
+        }
+      },
+    );
 
     _validateForm();
   }
 
   void _validateNewPassword() {
-    setState(() {
-      String newPassword = _newPasswordController.text;
+    setState(
+      () {
+        String newPassword = _newPasswordController.text;
 
-      if (validateNewPassword(newPassword)) {
-        _isNewPasswordValid = true;
-        _newPasswordError = null;
-      } else {
-        _isNewPasswordValid = false;
-        _newPasswordError = '10자 이상 영어 대문자, 소문자, 숫자, 특수문자 중 2종류를 조합해야 합니다.';
-      }
-    });
+        if (validateNewPassword(newPassword)) {
+          _isNewPasswordValid = true;
+          _newPasswordError = null;
+        } else {
+          _isNewPasswordValid = false;
+          _newPasswordError = '10자 이상 영어 대문자, 소문자, 숫자, 특수문자 중 2종류를 조합해야 합니다.';
+        }
+      },
+    );
 
     _validateForm();
   }
@@ -244,33 +259,28 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   }
 
   void _validateConfirmPassword() {
-    setState(() async {
-      String confirmPassword = _confirmPasswordController.text;
+    setState(
+      () {
+        String confirmPassword = _confirmPasswordController.text;
 
-      // try {
-      //   final baseUrl = dotenv.env['BASE_URL'];
-      //   String? token = await _storage.read(key: 'authToken');
-      //
-      //   final response = await _dio.patch('$baseUrl/auth/password', data: {'oldPassword'})
-      // } catch(e) {
-      //   print('비밀번호 변경 실패');
-      // }
-
-      if (confirmPassword == _newPasswordController.text) {
-        _isConfirmPasswordValid = true;
-        _confirmPasswordError = null;
-      } else {
-        _isConfirmPasswordValid = false;
-        _confirmPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
-      }
-    });
+        if (confirmPassword == _newPasswordController.text) {
+          _isConfirmPasswordValid = true;
+          _confirmPasswordError = null;
+        } else {
+          _isConfirmPasswordValid = false;
+          _confirmPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
+        }
+      },
+    );
 
     _validateForm();
   }
 
   void _validateForm() {
-    setState(() {
-      _isValid = _isNewPasswordValid && _isConfirmPasswordValid;
-    });
+    setState(
+      () {
+        _isValid = _isNewPasswordValid && _isConfirmPasswordValid;
+      },
+    );
   }
 }
