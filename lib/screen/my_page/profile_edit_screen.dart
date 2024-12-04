@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/password_change_screen.dart';
@@ -189,9 +192,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      // if (response.statusCode == 200) {
-      //   userState.updateProfileImage();
-      // }
+      if (response.statusCode == 200) {
+        Uint8List? profileImage = await pickedImage.readAsBytes();
+        userState.updateProfileImage(profileImage);
+      }
     } catch (e) {
       print('이미지 업롣으 에러: $e');
     }
