@@ -102,7 +102,7 @@ class _NicknameChangeScreenState extends State<NicknameChangeScreen> {
                   _errorMessage!,
                   style: TextStyle(
                     color: defaultColors['green'],
-                    fontSize: 14,
+                    fontSize: 12,
                   ),
                 ),
               ],

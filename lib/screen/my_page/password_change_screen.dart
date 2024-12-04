@@ -93,7 +93,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               _validateCurrentPassword();
                               if (!_isCurrentPasswordValid) {
                                 return;
@@ -102,14 +102,24 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                               String newPassword =
                                   _newPasswordController.text.trim();
                               if (newPassword.isNotEmpty && _isValid) {
-                                // try {
-                                //   final baseUrl = dotenv.env['BASE_URL'];
-                                //   String? token = await _storage.read(key: 'authToken');
-                                //
-                                //   final response = await _dio.patch('$baseUrl/auth/password', data: {'oldPassword'})
-                                // } catch(e) {
-                                //   print('비밀번호 변경 실패');
-                                // }
+                                try {
+                                  final baseUrl = dotenv.env['BASE_URL'];
+                                  String? token =
+                                      await _storage.read(key: 'authToken');
+                                  final response = await _dio.patch(
+                                    '$baseUrl/auth/password',
+                                    data: {'oldPassword'},
+                                    options: Options(
+                                      headers: {'Athorization': 'Bearer $token'},
+                                    ),
+                                  );
+
+                                  if (response.statusCode == 200) {
+                                    Navigator.pop(context);
+                                  }
+                                } catch (e) {
+                                  print('비밀번호 변경 실패');
+                                }
                                 userState.updatePassword(newPassword);
                                 print('비밀번호 변경 완료: $newPassword');
                                 Navigator.pop(context); // 변경 후 이전 화면으로 이동
@@ -207,7 +217,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               errorText,
-              style: TextStyle(color: defaultColors['green'], fontSize: 14),
+              style: TextStyle(color: defaultColors['green'], fontSize: 12),
             ),
           ),
       ],
