@@ -118,10 +118,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             '${userState.userName}',
                             style: TextStyle(
                               fontSize: 16,
-                              color: grey[350],
+                              color: defaultColors['lightGreen'],
                             ),
                           ),
-                          Icon(Icons.chevron_right, color: grey[350]),
+                          Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
                         ],
                       ),
                     ),
@@ -135,7 +135,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '비밀번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: grey[350]),
+                trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
                 onTap: () {
                   Navigator.push(
                       context,
@@ -150,7 +150,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '휴대폰 번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: grey[350]),
+                trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
                 onTap: () {
                   // 휴대폰 번호 변경 화면으로 이동
                 },
