@@ -71,20 +71,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 type: 'password',
                 errorText: _passwordError,
               ),
-              const SizedBox(height: 15),
+              const SizedBox(height: 5),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   GestureDetector(
-                    child: Text(
-                      '비밀번호 찾기',
-                      style: TextStyle(fontSize: 14.0, color: grey[400]),
-                    ),
-                  ),
-                  GestureDetector(
-                    child: Text(
-                      '회원가입',
-                      style: TextStyle(fontSize: 14.0, color: grey[400]),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      child: Text(
+                        '비밀번호 찾기',
+                        style: TextStyle(fontSize: 14.0, color: grey[400]),
+                      ),
                     ),
                     onTap: () {
                       Navigator.push(
@@ -92,6 +89,23 @@ class _LoginScreenState extends State<LoginScreen> {
                         MaterialPageRoute(
                           builder: (context) => SignUpScreen(),
                           // builder: (context) => ProfileEditScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  GestureDetector(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      child: Text(
+                        '회원가입',
+                        style: TextStyle(fontSize: 14.0, color: grey[400]),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignUpScreen(),
                         ),
                       );
                     },
@@ -222,9 +236,11 @@ class _LoginScreenState extends State<LoginScreen> {
           userState.updatePhoneNumber(userResponse.data['data']['phoneNumber']);
           userState.updateAcceptMarketing(
               userResponse.data['data']['acceptMarketing']);
-          Uint8List? profileImage = Uint8List.fromList(
-              base64Decode(userResponse.data['data']['profileImage']));
-          userState.updateProfileImage(profileImage);
+          if (userResponse.data['data']['profileImage'] != null) {
+            Uint8List? profileImage = Uint8List.fromList(
+                base64Decode(userResponse.data['data']['profileImage']));
+            userState.updateProfileImage(profileImage);
+          }
           userState.updateIsLogin(true);
         } else {
           await _storage.delete(key: 'authToken');
