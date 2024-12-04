@@ -241,6 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 base64Decode(userResponse.data['data']['profileImage']));
             userState.updateProfileImage(profileImage);
           }
+          userState.updateOrderCount(userResponse.data['data']['orderCount']);
           userState.updateIsLogin(true);
         } else {
           await _storage.delete(key: 'authToken');

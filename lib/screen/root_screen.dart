@@ -64,6 +64,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
             .updateAcceptMarketing(response.data['data']['acceptMarketing']);
         Uint8List? profileImage = Uint8List.fromList(base64Decode(response.data['data']['profileImage']));
         userState.updateProfileImage(profileImage);
+        userState.updateOrderCount(response.data['data']['orderCount']);
         userState.updateIsLogin(true);
       } else {
         await _storage.delete(key: 'authToken');
