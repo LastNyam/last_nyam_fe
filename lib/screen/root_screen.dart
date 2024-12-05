@@ -107,8 +107,8 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
     return [
       HomeScreen(),
       MapScreen(),
-      MyPageScreen(),
       OrderHistoryScreen(),
+      MyPageScreen(),
     ];
   }
 
@@ -117,43 +117,55 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin{
       backgroundColor: Colors.white,
       type: BottomNavigationBarType.fixed,
       currentIndex: controller!.index,
-      onTap: (int index) {  // ➎ 탭이 선택될 때마다 실행되는 함수
+      onTap: (int index) {
         setState(() {
           controller!.animateTo(index);
         });
       },
-      selectedItemColor: Color(0xFF417C4E),  // 선택된 탭의 색상
-      unselectedItemColor: Color(0xFFB9C6BC),  // 선택되지 않은 탭의 색상
-      selectedLabelStyle: TextStyle(
-        height: 2.0,
+      selectedItemColor: const Color(0xFF417C4E), // 선택된 탭의 색상
+      unselectedItemColor: const Color(0xFFB9C6BC), // 선택되지 않은 탭의 색상
+      selectedLabelStyle: const TextStyle(
+        height: 1.0,
+        fontSize: 9, // 선택된 라벨 크기
       ),
-      unselectedLabelStyle: TextStyle(
-        height: 2.0,
+      unselectedLabelStyle: const TextStyle(
+        height: 1.0,
+        fontSize: 9, // 선택되지 않은 라벨 크기
       ),
       items: [
-        BottomNavigationBarItem(  // ➊ 하단 탭바의 각 버튼을 구현
-          icon: Icon(
-            Icons.home_filled,
+        BottomNavigationBarItem(
+          icon: Image.asset(
+            'assets/icon/home.png',
+            width: 24,
+          ),
+          activeIcon: Image.asset(
+            'assets/icon/home_fill.png',
+            width: 24,
           ),
           label: '홈',
         ),
         BottomNavigationBarItem(
-          icon: Icon(
-            Icons.location_on_rounded,
+          icon: Image.asset(
+            'assets/icon/map.png',
+            width: 24,
+          ),
+          activeIcon: Image.asset(
+            'assets/icon/map_fill.png',
+            width: 24,
           ),
           label: '주변 매장',
         ),
         BottomNavigationBarItem(
-          icon: Icon(
-            Icons.dining_outlined,
-          ),
-          label: '마이냠',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(
+          icon: const Icon(
             Icons.list_alt_rounded,
           ),
           label: '주문 내역',
+        ),
+        BottomNavigationBarItem(
+          icon: const Icon(
+            Icons.dining_outlined,
+          ),
+          label: '마이냠',
         ),
       ],
     );
