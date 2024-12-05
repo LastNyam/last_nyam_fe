@@ -28,8 +28,10 @@ Map<String?, Color?> mannerTemperature = {
 Map<String?, Color?> defaultColors = {
   'green': Color(0xff417c4e),
   'lightGreen': Color(0xffb9c6bc),
-  'pureWhite': Color(0xffffffff),
+  'pureWhite': Color(0xffFAFAFA),
   'white': Color(0xfff2f2f2),
   'black': Color(0xff262626),
   'brown': Color(0xff604c4d),
+  'gray': Color(0xFF6B7280),
+  'lightGray': Color(0xFFf9f9f9)
 };
