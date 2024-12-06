@@ -61,10 +61,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
         builder: (context, constraints) {
           return SingleChildScrollView(
             padding: EdgeInsets.only(
-                bottom: MediaQuery
-                    .of(context)
-                    .viewInsets
-                    .bottom),
+                bottom: MediaQuery.of(context).viewInsets.bottom),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: constraints.maxHeight, // 화면 크기 유지
@@ -95,18 +92,26 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             return;
                           }
 
-                          // final baseUrl = dotenv.env['BASE_URL'];
-                          // final response = await _dio.post('$baseUrl/auth/check/phone-number');
-                          //
-                          // if (response.statusCode == 200) {
-                          //   setState(() {
-                          //     _availableVerify = true;
-                          //   });
-                          // }
+                          try {
+                            String phoneNumber = _phoneNumberController.text;
+                            final baseUrl = dotenv.env['BASE_URL'];
+                            final response = await _dio.post(
+                                '$baseUrl/auth/send-code/phone',
+                                data: {
+                                  'phoneNumber': phoneNumber,
+                                });
 
-                          setState(() {
-                            _availableVerify = true;
-                          });
+                            if (response.statusCode == 200) {
+                              setState(() {
+                                _availableVerify = true;
+                              });
+                            }
+                          } catch (e) {
+                            print('인증번호 전송 실패: $e');
+                            setState(() {
+                              _availableVerify = false;
+                            });
+                          }
                         },
                       ),
                       if (_availableVerify) SizedBox(height: 20.0),
@@ -117,6 +122,44 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           type: 'verify',
                           errorText: _verifyError,
                         ),
+                      if (_availableVerify) SizedBox(height: 15.0),
+                      if (_availableVerify)
+                        !_isVerifyValid ?
+                        GestureDetector(
+                          child: Text(
+                            '인증번호 확인',
+                            style: TextStyle(
+                                fontSize: 14.0, color: Colors.grey[400]),
+                          ),
+                          onTap: () async {
+                            _validatePhoneNumber();
+                            if (!_isPhoneNumberValid) {
+                              return;
+                            }
+
+                            try {
+                              String phoneNumber = _phoneNumberController.text;
+                              String verification = _verifyController.text;
+                              final baseUrl = dotenv.env['BASE_URL'];
+                              final response = await _dio.post(
+                                  '$baseUrl/auth/check/phone',
+                                  data: {
+                                    'phoneNumber': phoneNumber,
+                                    'verification': verification,
+                                  });
+
+                              if (response.statusCode == 200) {
+                                setState(() {
+                                  _isVerifyValid = true;
+                                });
+                              }
+                            } catch (e) {
+                              print('인증번호 확인 실패: $e');
+                              _verifyError = '인증번호가 일치하지 않습니다.';
+                            }
+                          },
+                        ) :
+                        Text('인증 완료되었습니다.', style: TextStyle(fontSize: 14, color: Colors.lightBlue),),
                       SizedBox(height: 40),
                       _buildPasswordField(
                         controller: _nicknameController,
@@ -179,7 +222,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                   print('회원가입 완료');
                   Navigator.pop(context);
                 }
-              } catch(e) {
+              } catch (e) {
                 print('회원가입 실패: $e');
               }
             },
@@ -219,8 +262,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
         SizedBox(height: 8),
         TextField(
           controller: controller,
-          obscureText: type == 'phoneNumber' || type == 'verify' ||
-              type == 'nickname' ? false : true,
+          obscureText:
+              type == 'phoneNumber' || type == 'verify' || type == 'nickname'
+                  ? false
+                  : true,
           decoration: InputDecoration(
             filled: true,
             fillColor: defaultColors['white'],
@@ -230,7 +275,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -238,7 +283,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -246,7 +291,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -380,9 +425,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _validateForm() {
     setState(() {
-      // _isValid = _isPhoneNumberValid && _isNicknameValid && _isPasswordValid && _isConfirmPasswordValid && _isVerifyValid;
-      _isValid = _isPhoneNumberValid && _isNicknameValid && _isPasswordValid &&
-          _isConfirmPasswordValid;
+      _isValid = _isPhoneNumberValid && _isNicknameValid && _isPasswordValid && _isConfirmPasswordValid && _isVerifyValid;
     });
   }
 }
