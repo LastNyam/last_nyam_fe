@@ -1,6 +1,8 @@
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/password_change_screen.dart';
+import 'package:last_nyam/screen/my_page/phone_number_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/screen/my_page/nickname_change_screen.dart';
@@ -8,7 +10,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'dart:io';
 
 class ProfileEditScreen extends StatefulWidget {
   const ProfileEditScreen({super.key});
@@ -16,7 +17,6 @@ class ProfileEditScreen extends StatefulWidget {
   @override
   State<ProfileEditScreen> createState() => _ProfileEditScreenState();
 }
-
 
 class _ProfileEditScreenState extends State<ProfileEditScreen> {
   final _storage = const FlutterSecureStorage();
@@ -65,8 +65,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       backgroundColor: defaultColors['white'],
                       backgroundImage: userState.profileImage != null
                           ? MemoryImage(userState.profileImage!) // 선택된 이미지
-                          : AssetImage(
-                          'assets/image/profile_image.png') as ImageProvider, // 기본 이미지 프로필 이미지 경로
+                          : AssetImage('assets/image/profile_image.png')
+                              as ImageProvider, // 기본 이미지 프로필 이미지 경로
                     ),
                     Container(
                       decoration: BoxDecoration(
@@ -106,12 +106,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  NicknameChangeScreen(
-                                      currentNickname: userState.userName),
-                            ));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => NicknameChangeScreen(
+                                currentNickname: userState.userName),
+                          ),
+                        );
                       },
                       child: Row(
                         children: [
@@ -119,10 +119,11 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                             '${userState.userName}',
                             style: TextStyle(
                               fontSize: 16,
-                              color: grey[350],
+                              color: defaultColors['lightGreen'],
                             ),
                           ),
-                          Icon(Icons.chevron_right, color: grey[350]),
+                          Icon(Icons.chevron_right,
+                              color: defaultColors['lightGreen']),
                         ],
                       ),
                     ),
@@ -136,13 +137,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '비밀번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: grey[350]),
+                trailing: Icon(Icons.chevron_right,
+                    color: defaultColors['lightGreen']),
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PasswordChangeScreen(),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PasswordChangeScreen(),
+                    ),
+                  );
                 },
               ),
               // 휴대폰 번호 변경 섹션
@@ -151,9 +154,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '휴대폰 번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: grey[350]),
+                trailing: Icon(Icons.chevron_right,
+                    color: defaultColors['lightGreen']),
                 onTap: () {
-                  // 휴대폰 번호 변경 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhoneNumberChangeScreen(),
+                    ),
+                  );
                 },
               ),
             ],
@@ -169,7 +178,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     final baseUrl = dotenv.env['BASE_URL']!;
     final ImagePicker _picker = ImagePicker();
     final XFile? pickedImage =
-    await _picker.pickImage(source: ImageSource.gallery);
+        await _picker.pickImage(source: ImageSource.gallery);
 
     MultipartFile file = await MultipartFile.fromFile(
       pickedImage!.path,
@@ -183,24 +192,39 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     print(pickedImage!.path);
     String? token = await _storage.read(key: 'authToken');
     try {
-      final response = await _dio.post(
+      final response = await _dio.patch(
         '$baseUrl/auth/profile-image',
         data: formData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      // if (response.statusCode == 200) {
-      //   userState.updateProfileImage();
-      // }
+      if (response.statusCode == 200) {
+        Uint8List? profileImage = await pickedImage.readAsBytes();
+        userState.updateProfileImage(profileImage);
+      }
     } catch (e) {
       print('이미지 업롣으 에러: $e');
     }
   }
 
   // 기본 이미지 적용
-  void _applyDefaultImage() {
+  void _applyDefaultImage() async {
     final userState = Provider.of<UserState>(context, listen: false);
-    userState.updateProfileImage(null);
+    try {
+      String? token = await _storage.read(key: 'authToken');
+      final baseUrl = dotenv.env['BASE_URL']!;
+      final response = await _dio.patch(
+        '$baseUrl/auth/profile-image',
+        data: null,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        userState.updateProfileImage(null);
+      }
+    } catch (e) {
+      print('기본이미지 적용 실패: $e');
+    }
   }
 
   // 프로필 사진 옵션 선택
@@ -223,8 +247,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
               ),
               SizedBox(height: 16),
               ListTile(
-                leading: Icon(
-                    Icons.photo_library, color: defaultColors['green']),
+                leading:
+                    Icon(Icons.photo_library, color: defaultColors['green']),
                 title: Text('앨범에서 사진 선택'),
                 onTap: () {
                   Navigator.pop(context); // 옵션 창 닫기

@@ -1,7 +1,10 @@
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:last_nyam/screen/my_page/sign_up_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/const/colors.dart';
@@ -57,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 controller: _phoneNumberController,
                 label: "휴대폰 번호를 입력해주세요",
                 type: 'phoneNumber',
-                hintText: "휴대폰 번호를 입력하세요.",
+                hintText: "010-1234-5678",
                 errorText: _phoneNumberError,
               ),
               const SizedBox(height: 20),
@@ -67,6 +70,47 @@ class _LoginScreenState extends State<LoginScreen> {
                 hintText: "비밀번호를 입력하세요.",
                 type: 'password',
                 errorText: _passwordError,
+              ),
+              const SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  GestureDetector(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      child: Text(
+                        '비밀번호 찾기',
+                        style: TextStyle(fontSize: 14.0, color: grey[400]),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignUpScreen(),
+                          // builder: (context) => ProfileEditScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  GestureDetector(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                      child: Text(
+                        '회원가입',
+                        style: TextStyle(fontSize: 14.0, color: grey[400]),
+                      ),
+                    ),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SignUpScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
               const Spacer(),
               SizedBox(
@@ -122,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -130,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -138,7 +182,7 @@ class _LoginScreenState extends State<LoginScreen> {
               borderRadius: BorderRadius.circular(8.0),
               borderSide: BorderSide(
                 color:
-                errorText == null ? Colors.transparent : Color(0xff417c4e),
+                    errorText == null ? Colors.transparent : Color(0xff417c4e),
                 width: 2.0,
               ),
             ),
@@ -156,7 +200,7 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               errorText,
-              style: TextStyle(color: defaultColors['green'], fontSize: 14),
+              style: TextStyle(color: defaultColors['green'], fontSize: 12),
             ),
           ),
       ],
@@ -176,22 +220,29 @@ class _LoginScreenState extends State<LoginScreen> {
 
       print(response.data['data']);
 
-      if (response.statusCode == 200 && response.data['data']['token'] != null) {
+      if (response.statusCode == 200 &&
+          response.data['data']['token'] != null) {
         String token = response.data['data']['token'];
 
         // Save token in secure storage
         await _storage.write(key: 'authToken', value: token);
 
-        final userResponse = await _dio.get(
-          '$baseUrl/auth/my-info',
-          options: Options(headers: {'Authorization': 'Bearer $token'})
-        );
+        final userResponse = await _dio.get('$baseUrl/auth/my-info',
+            options: Options(headers: {'Authorization': 'Bearer $token'}));
 
         if (userResponse.statusCode == 200) {
           final userState = Provider.of<UserState>(context, listen: false);
           userState.updateUserName(userResponse.data['data']['nickname']);
           userState.updatePhoneNumber(userResponse.data['data']['phoneNumber']);
-          userState.updateAcceptMarketing(userResponse.data['data']['acceptMarketing']);
+          userState.updateAcceptMarketing(
+              userResponse.data['data']['acceptMarketing']);
+          if (userResponse.data['data']['profileImage'] != null) {
+            Uint8List? profileImage = Uint8List.fromList(
+                base64Decode(userResponse.data['data']['profileImage']));
+            userState.updateProfileImage(profileImage);
+          }
+          userState.updateOrderCount(userResponse.data['data']['orderCount']);
+          userState.updateIsLogin(true);
         } else {
           await _storage.delete(key: 'authToken');
         }
@@ -226,17 +277,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   bool validatePhoneNumber(String phoneNumber) {
-    RegExp phonenumberRegex = RegExp(
+    RegExp phoneNumberRegex = RegExp(
       r'^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$',
     );
-    return phonenumberRegex.hasMatch(phoneNumber);
+    return phoneNumberRegex.hasMatch(phoneNumber);
   }
 
   void _validatePassword() {
     setState(() {
       String password = _passwordController.text;
 
-      if (password != 'dswvgw1234') {
+      if (password == 'dswvgw1234') {
         _isPasswordValid = true;
         _passwordError = null;
       } else {
