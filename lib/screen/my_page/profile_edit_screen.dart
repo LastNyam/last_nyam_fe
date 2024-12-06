@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/password_change_screen.dart';
+import 'package:last_nyam/screen/my_page/phone_number_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/screen/my_page/nickname_change_screen.dart';
@@ -121,7 +122,8 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                               color: defaultColors['lightGreen'],
                             ),
                           ),
-                          Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                          Icon(Icons.chevron_right,
+                              color: defaultColors['lightGreen']),
                         ],
                       ),
                     ),
@@ -135,13 +137,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '비밀번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                trailing: Icon(Icons.chevron_right,
+                    color: defaultColors['lightGreen']),
                 onTap: () {
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PasswordChangeScreen(),
-                      ));
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PasswordChangeScreen(),
+                    ),
+                  );
                 },
               ),
               // 휴대폰 번호 변경 섹션
@@ -150,9 +154,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                   '휴대폰 번호 변경',
                   style: TextStyle(fontSize: 16),
                 ),
-                trailing: Icon(Icons.chevron_right, color: defaultColors['lightGreen']),
+                trailing: Icon(Icons.chevron_right,
+                    color: defaultColors['lightGreen']),
                 onTap: () {
-                  // 휴대폰 번호 변경 화면으로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PhoneNumberChangeScreen(),
+                    ),
+                  );
                 },
               ),
             ],
@@ -198,9 +208,23 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   }
 
   // 기본 이미지 적용
-  void _applyDefaultImage() {
+  void _applyDefaultImage() async {
     final userState = Provider.of<UserState>(context, listen: false);
-    userState.updateProfileImage(null);
+    try {
+      String? token = await _storage.read(key: 'authToken');
+      final baseUrl = dotenv.env['BASE_URL']!;
+      final response = await _dio.patch(
+        '$baseUrl/auth/profile-image',
+        data: null,
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+
+      if (response.statusCode == 200) {
+        userState.updateProfileImage(null);
+      }
+    } catch (e) {
+      print('기본이미지 적용 실패: $e');
+    }
   }
 
   // 프로필 사진 옵션 선택
