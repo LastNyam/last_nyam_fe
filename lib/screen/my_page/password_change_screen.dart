@@ -110,7 +110,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
                                     '$baseUrl/auth/password',
                                     data: {'oldPassword'},
                                     options: Options(
-                                      headers: {'Athorization': 'Bearer $token'},
+                                      headers: {'Authorization': 'Bearer $token'},
                                     ),
                                   );
 
