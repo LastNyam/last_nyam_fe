@@ -1,4 +1,7 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/const/colors.dart';
@@ -12,6 +15,8 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   final _currentPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _dio = Dio();
+  final _storage = const FlutterSecureStorage();
 
   bool _isCurrentPasswordValid = false;
   bool _isNewPasswordValid = false;
@@ -42,72 +47,109 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
           },
         ),
       ),
-      body: Container(
-        color: Colors.white,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildPasswordField(
-                controller: _currentPasswordController,
-                label: "현재 비밀번호를 입력해주세요",
-                type: 'current',
-                hintText: "비밀번호를 입력하세요.",
-                errorText: _currentPasswordError,
+      body: LayoutBuilder(
+        builder: (context, constrains) {
+          return SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: constrains.maxHeight,
               ),
-              SizedBox(height: 80),
-              _buildPasswordField(
-                controller: _newPasswordController,
-                label: "새 비밀번호를 입력해주세요",
-                hintText: "비밀번호를 입력하세요.",
-                type: 'new',
-                errorText: _newPasswordError,
-              ),
-              SizedBox(height: 20),
-              _buildPasswordField(
-                controller: _confirmPasswordController,
-                label: "확인을 위해 다시 비밀번호를 입력해주세요",
-                hintText: "비밀번호를 입력하세요.",
-                type: 'confirm',
-                errorText: _confirmPasswordError,
-              ),
-              Spacer(),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    _validateCurrentPassword();
-                    if (!_isCurrentPasswordValid) {
-                      return;
-                    }
+              child: IntrinsicHeight(
+                child: Container(
+                  color: Colors.white,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _buildPasswordField(
+                          controller: _currentPasswordController,
+                          label: "현재 비밀번호를 입력해주세요",
+                          type: 'current',
+                          hintText: "비밀번호를 입력하세요.",
+                          errorText: _currentPasswordError,
+                        ),
+                        SizedBox(height: 80),
+                        _buildPasswordField(
+                          controller: _newPasswordController,
+                          label: "새 비밀번호를 입력해주세요",
+                          hintText: "비밀번호를 입력하세요.",
+                          type: 'new',
+                          errorText: _newPasswordError,
+                        ),
+                        SizedBox(height: 20),
+                        _buildPasswordField(
+                          controller: _confirmPasswordController,
+                          label: "확인을 위해 다시 비밀번호를 입력해주세요",
+                          hintText: "비밀번호를 입력하세요.",
+                          type: 'confirm',
+                          errorText: _confirmPasswordError,
+                        ),
+                        SizedBox(height: 20),
+                        Spacer(),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              _validateCurrentPassword();
+                              if (!_isCurrentPasswordValid) {
+                                return;
+                              }
 
-                    String newPassword = _newPasswordController.text.trim();
-                    if (newPassword.isNotEmpty && _isValid) {
-                      userState.updatePassword(newPassword);
-                      print('비밀번호 변경 완료: $newPassword');
-                      Navigator.pop(context); // 변경 후 이전 화면으로 이동
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _isValid
-                        ? defaultColors['green']
-                        : defaultColors['lightGreen'], // 버튼 색상
-                    padding: EdgeInsets.symmetric(vertical: 16.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(5.0), // Border radius 설정
+                              String newPassword =
+                                  _newPasswordController.text.trim();
+                              if (newPassword.isNotEmpty && _isValid) {
+                                try {
+                                  final baseUrl = dotenv.env['BASE_URL'];
+                                  String? token =
+                                      await _storage.read(key: 'authToken');
+                                  final response = await _dio.patch(
+                                    '$baseUrl/auth/password',
+                                    data: {'oldPassword'},
+                                    options: Options(
+                                      headers: {'Authorization': 'Bearer $token'},
+                                    ),
+                                  );
+
+                                  if (response.statusCode == 200) {
+                                    Navigator.pop(context);
+                                  }
+                                } catch (e) {
+                                  print('비밀번호 변경 실패');
+                                }
+                                userState.updatePassword(newPassword);
+                                print('비밀번호 변경 완료: $newPassword');
+                                Navigator.pop(context); // 변경 후 이전 화면으로 이동
+                              }
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isValid
+                                  ? defaultColors['green']
+                                  : defaultColors['lightGreen'], // 버튼 색상
+                              padding: EdgeInsets.symmetric(vertical: 16.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(
+                                    5.0), // Border radius 설정
+                              ),
+                            ),
+                            child: Text(
+                              '변경 완료',
+                              style:
+                                  TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  child: Text(
-                    '변경 완료',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
                   ),
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -175,7 +217,7 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
             padding: const EdgeInsets.only(top: 8.0),
             child: Text(
               errorText,
-              style: TextStyle(color: defaultColors['green'], fontSize: 14),
+              style: TextStyle(color: defaultColors['green'], fontSize: 12),
             ),
           ),
       ],
@@ -183,34 +225,38 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   }
 
   void _validateCurrentPassword() {
-    setState(() {
-      String currentPassword = _currentPasswordController.text;
-      final userState = Provider.of<UserState>(context, listen: false);
+    setState(
+      () {
+        String currentPassword = _currentPasswordController.text;
+        final userState = Provider.of<UserState>(context, listen: false);
 
-      if (currentPassword == userState.password) {
-        _isCurrentPasswordValid = true;
-        _currentPasswordError = null;
-      } else {
-        _isCurrentPasswordValid = false;
-        _currentPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
-      }
-    });
+        if (currentPassword == userState.password) {
+          _isCurrentPasswordValid = true;
+          _currentPasswordError = null;
+        } else {
+          _isCurrentPasswordValid = false;
+          _currentPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
+        }
+      },
+    );
 
     _validateForm();
   }
 
   void _validateNewPassword() {
-    setState(() {
-      String newPassword = _newPasswordController.text;
+    setState(
+      () {
+        String newPassword = _newPasswordController.text;
 
-      if (validateNewPassword(newPassword)) {
-        _isNewPasswordValid = true;
-        _newPasswordError = null;
-      } else {
-        _isNewPasswordValid = false;
-        _newPasswordError = '10자 이상 영어 대문자, 소문자, 숫자, 특수문자 중 2종류를 조합해야 합니다.';
-      }
-    });
+        if (validateNewPassword(newPassword)) {
+          _isNewPasswordValid = true;
+          _newPasswordError = null;
+        } else {
+          _isNewPasswordValid = false;
+          _newPasswordError = '10자 이상 영어 대문자, 소문자, 숫자, 특수문자 중 2종류를 조합해야 합니다.';
+        }
+      },
+    );
 
     _validateForm();
   }
@@ -223,24 +269,28 @@ class _PasswordChangeScreenState extends State<PasswordChangeScreen> {
   }
 
   void _validateConfirmPassword() {
-    setState(() {
-      String confirmPassword = _confirmPasswordController.text;
+    setState(
+      () {
+        String confirmPassword = _confirmPasswordController.text;
 
-      if (confirmPassword == _newPasswordController.text) {
-        _isConfirmPasswordValid = true;
-        _confirmPasswordError = null;
-      } else {
-        _isConfirmPasswordValid = false;
-        _confirmPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
-      }
-    });
+        if (confirmPassword == _newPasswordController.text) {
+          _isConfirmPasswordValid = true;
+          _confirmPasswordError = null;
+        } else {
+          _isConfirmPasswordValid = false;
+          _confirmPasswordError = '비밀번호가 일치하지 않습니다. 다시 입력해주세요.';
+        }
+      },
+    );
 
     _validateForm();
   }
 
   void _validateForm() {
-    setState(() {
-      _isValid = _isNewPasswordValid && _isConfirmPasswordValid;
-    });
+    setState(
+      () {
+        _isValid = _isNewPasswordValid && _isConfirmPasswordValid;
+      },
+    );
   }
 }

@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+import 'package:last_nyam/colors.dart';
 import 'package:last_nyam/screen/root_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:last_nyam/const/colors.dart';
@@ -12,14 +14,18 @@ void main() async {
   // Load the .env file
   await dotenv.load(fileName: "assets/env/.env");
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => UserState()),
-      ],
-      child: MyApp(),
-    ),
-  );
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp, // 세로 방향 고정
+  ]).then((_) {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => UserState()),
+        ],
+        child: MyApp(),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {
