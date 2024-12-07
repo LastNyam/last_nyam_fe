@@ -33,7 +33,7 @@ class _PhoneNumberChangeScreenState extends State<PhoneNumberChangeScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(
-          "회원가입",
+          "휴대폰 번호 변경",
           style: TextStyle(
               color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
         ),
@@ -145,6 +145,7 @@ class _PhoneNumberChangeScreenState extends State<PhoneNumberChangeScreen> {
                                       setState(() {
                                         _isVerifyValid = true;
                                       });
+                                      _validateForm();
                                     }
                                   } catch (e) {
                                     print('인증번호 확인 실패: $e');

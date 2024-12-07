@@ -6,6 +6,7 @@ import 'package:last_nyam/const/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:last_nyam/colors.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
