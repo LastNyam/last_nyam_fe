@@ -190,8 +190,6 @@ class _LoginScreenState extends State<LoginScreen> {
           onChanged: (value) {
             if (type == 'phoneNumber') {
               _validatePhoneNumber();
-            } else if (type == 'password') {
-              _validatePassword();
             }
           },
         ),
@@ -254,9 +252,9 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       print('로그인 실패: ${e}');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그인 실패. 다시 시도해주세요.')),
-      );
+      setState(() {
+        _passwordError = '계정이 존재하지 않거나, 비밀번호가 일치하지 않습니다.';
+      });
     }
   }
 
@@ -281,22 +279,6 @@ class _LoginScreenState extends State<LoginScreen> {
       r'^01[0-9]{1}-[0-9]{3,4}-[0-9]{4}$',
     );
     return phoneNumberRegex.hasMatch(phoneNumber);
-  }
-
-  void _validatePassword() {
-    setState(() {
-      String password = _passwordController.text;
-
-      if (password == 'dswvgw1234') {
-        _isPasswordValid = true;
-        _passwordError = null;
-      } else {
-        _isPasswordValid = false;
-        _passwordError = '비밀번호가 일치하지 않습니다.';
-      }
-    });
-
-    _validateForm();
   }
 
   void _validateForm() {
