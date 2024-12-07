@@ -18,18 +18,20 @@ class _SignUpScreenState extends State<SignUpScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _dio = Dio();
-  final _storage = const FlutterSecureStorage();
 
   bool _isPhoneNumberValid = false;
   bool _isVerifyValid = false;
   bool _isNicknameValid = false;
+  bool _isDuplicatedNickname = true;
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
   bool _isValid = false;
   bool _availableVerify = false;
   String? _phoneNumberError;
+  String _savePhoneNumber = '';
   String? _verifyError;
   String? _nicknameError;
+  String _saveNickname = '';
   String? _passwordError;
   String? _confirmPasswordError;
 
@@ -95,11 +97,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           try {
                             String phoneNumber = _phoneNumberController.text;
                             final baseUrl = dotenv.env['BASE_URL'];
-                            final response = await _dio.post(
-                                '$baseUrl/auth/send-code/phone',
-                                data: {
-                                  'phoneNumber': phoneNumber,
-                                });
+                            final response = await _dio
+                                .post('$baseUrl/auth/send-code/phone', data: {
+                              'phoneNumber': phoneNumber,
+                            });
 
                             if (response.statusCode == 200) {
                               setState(() {
@@ -124,42 +125,55 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         ),
                       if (_availableVerify) SizedBox(height: 15.0),
                       if (_availableVerify)
-                        !_isVerifyValid ?
-                        GestureDetector(
-                          child: Text(
-                            '인증번호 확인',
-                            style: TextStyle(
-                                fontSize: 14.0, color: Colors.grey[400]),
-                          ),
-                          onTap: () async {
-                            _validatePhoneNumber();
-                            if (!_isPhoneNumberValid) {
-                              return;
-                            }
+                        !_isVerifyValid
+                            ? GestureDetector(
+                                child: Text(
+                                  '인증번호 확인',
+                                  style: TextStyle(
+                                    fontSize: 14.0,
+                                    color: Colors.grey[400],
+                                  ),
+                                ),
+                                onTap: () async {
+                                  String phoneNumber =
+                                      _phoneNumberController.text;
+                                  _savePhoneNumber = phoneNumber;
+                                  _validatePhoneNumber();
+                                  if (!_isPhoneNumberValid) {
+                                    return;
+                                  }
 
-                            try {
-                              String phoneNumber = _phoneNumberController.text;
-                              String verification = _verifyController.text;
-                              final baseUrl = dotenv.env['BASE_URL'];
-                              final response = await _dio.post(
-                                  '$baseUrl/auth/check/phone',
-                                  data: {
-                                    'phoneNumber': phoneNumber,
-                                    'verification': verification,
-                                  });
+                                  try {
 
-                              if (response.statusCode == 200) {
-                                setState(() {
-                                  _isVerifyValid = true;
-                                });
-                              }
-                            } catch (e) {
-                              print('인증번호 확인 실패: $e');
-                              _verifyError = '인증번호가 일치하지 않습니다.';
-                            }
-                          },
-                        ) :
-                        Text('인증 완료되었습니다.', style: TextStyle(fontSize: 14, color: Colors.lightBlue),),
+                                    String verification =
+                                        _verifyController.text;
+                                    final baseUrl = dotenv.env['BASE_URL'];
+                                    final response = await _dio.post(
+                                      '$baseUrl/auth/check/phone',
+                                      data: {
+                                        'phoneNumber': phoneNumber,
+                                        'verification': verification,
+                                      },
+                                    );
+
+                                    if (response.statusCode == 200) {
+                                      setState(() {
+                                        _isVerifyValid = true;
+                                      });
+                                    }
+                                  } catch (e) {
+                                    print('인증번호 확인 실패: $e');
+                                    _verifyError = '인증번호가 일치하지 않습니다.';
+                                  }
+                                },
+                              )
+                            : Text(
+                                '인증 완료되었습니다.',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.lightBlue,
+                                ),
+                              ),
                       SizedBox(height: 40),
                       _buildPasswordField(
                         controller: _nicknameController,
@@ -167,6 +181,64 @@ class _SignUpScreenState extends State<SignUpScreen> {
                         hintText: "닉네임을 입력하세요.",
                         type: 'nickname',
                         errorText: _nicknameError,
+                      ),
+                      SizedBox(height: 15.0),
+                      _isDuplicatedNickname ? GestureDetector(
+                        child: Text(
+                          '중복 확인',
+                          style: TextStyle(
+                            fontSize: 14.0,
+                            color: Colors.grey[400],
+                          ),
+                        ),
+                        onTap: () async {
+                          String nickname = _nicknameController.text;
+                          _saveNickname = nickname;
+                          _validateNickname();
+                          if (!_isNicknameValid) {
+                            print('닉네임 유효하지 않음');
+                            return;
+                          }
+                          print('닉네임 유효');
+
+                          try {
+                            final baseUrl = dotenv.env['BASE_URL'];
+                            final response = await _dio.get(
+                              '$baseUrl/auth/check/nickname',
+                              queryParameters: {
+                                'nickname': nickname
+                              },
+                            );
+                            print(response);
+
+                            if (response.statusCode == 200 && response.data['data']['isDuplicated'] == false) {
+                              setState(() {
+                                _isNicknameValid = true;
+                                _nicknameError = null;
+                                _isDuplicatedNickname = false;
+                              });
+                            } else if (response.statusCode == 200 && response.data['data']['isDuplicated'] == true) {
+                              setState(() {
+                                _isNicknameValid = false;
+                                _nicknameError = '이미 존재하는 닉네임입니다.';
+                                _isDuplicatedNickname = true;
+                              });
+                            }
+                          } catch (e) {
+                            print('인증번호 전송 실패: $e');
+                            setState(() {
+                              _isNicknameValid = false;
+                              _nicknameError = '예상치 못한 에러입니다.';
+                            });
+                          }
+                        },
+                      ) :
+                      Text(
+                        '사용가능한 닉네임입니다.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.lightBlue,
+                        ),
                       ),
                       SizedBox(height: 20),
                       _buildPasswordField(
@@ -204,17 +276,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 return;
               }
 
-              String phoneNumber = _phoneNumberController.text;
-              String nickname = _nicknameController.text;
               String password = _passwordController.text;
               bool acceptMarketing = false;
 
               try {
                 final baseUrl = dotenv.env['BASE_URL'];
                 final response = await _dio.post('$baseUrl/auth/signup', data: {
-                  'nickname': nickname,
+                  'nickname': _saveNickname,
                   'password': password,
-                  'phoneNumber': phoneNumber,
+                  'phoneNumber': _savePhoneNumber,
                   'acceptMarketing': acceptMarketing,
                 });
 
@@ -302,11 +372,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
               _validatePhoneNumber();
             }
 
-            if (type == 'nickname') {
-              _validateNickname();
-            }
-
-            if ('$type' == 'new' || type == 'confirm') {
+            if (type == 'new' || type == 'confirm') {
               _validatePassword();
               _validateConfirmPassword();
             }
@@ -425,7 +491,11 @@ class _SignUpScreenState extends State<SignUpScreen> {
 
   void _validateForm() {
     setState(() {
-      _isValid = _isPhoneNumberValid && _isNicknameValid && _isPasswordValid && _isConfirmPasswordValid && _isVerifyValid;
+      _isValid = _isPhoneNumberValid &&
+          _isNicknameValid &&
+          _isPasswordValid &&
+          _isConfirmPasswordValid &&
+          _isVerifyValid;
     });
   }
 }
