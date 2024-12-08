@@ -23,8 +23,6 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   LatLng? _currentPosition = null;
-  CameraPosition? _initialCameraPosition; // 초기 카메라 위치를 동적으로 설정
-  bool _isRendering = false;
   bool _isLoading = true;
   final _dio = Dio();
   final _storage = const FlutterSecureStorage();
@@ -32,8 +30,8 @@ class _MapScreenState extends State<MapScreen> {
     {
       "storeId": 1,
       "storeName": "삼첩분식",
-      "posX": LatLng(36.1455956, 128.3926275).latitude,
-      "posY": LatLng(36.1455956, 128.3926275).longitude,
+      "posX": LatLng(36.1445956, 128.3926275).latitude,
+      "posY": LatLng(36.1445956, 128.3926275).longitude,
       "temperature": 36.5,
       "address": "가게 주소",
       "callNumber": "054-123-4567",
@@ -43,8 +41,8 @@ class _MapScreenState extends State<MapScreen> {
     {
       "storeId": 2,
       "storeName": "멋쟁이과일야채",
-      "posX": LatLng(36.1455864, 128.3926456).latitude,
-      "posY": LatLng(36.1455864, 128.3926456).longitude,
+      "posX": LatLng(36.1465864, 128.3926456).latitude,
+      "posY": LatLng(36.1465864, 128.3926456).longitude,
       "temperature": 36.5,
       "address": "가게 주소",
       "callNumber": "054-123-4567",
@@ -54,8 +52,8 @@ class _MapScreenState extends State<MapScreen> {
     {
       "storeId": 3,
       "storeName": "라쿵푸마라탕",
-      "posX": LatLng(36.1455856, 128.3926487).latitude,
-      "posY": LatLng(36.1455856, 128.3926487).longitude,
+      "posX": LatLng(36.1460856, 128.4071487).latitude,
+      "posY": LatLng(36.1460856, 128.4071487).longitude,
       "temperature": 36.5,
       "address": "가게 주소",
       "callNumber": "054-123-4567",
@@ -65,8 +63,8 @@ class _MapScreenState extends State<MapScreen> {
     {
       "storeId": 4,
       "storeName": "박가네과일",
-      "posX": LatLng(36.1455974, 128.3926217).latitude,
-      "posY": LatLng(36.1455974, 128.3926217).longitude,
+      "posX": LatLng(36.1450974, 128.3916217).latitude,
+      "posY": LatLng(36.1450974, 128.3916217).longitude,
       "temperature": 36.5,
       "address": "가게 주소",
       "callNumber": "054-123-4567",
@@ -85,6 +83,8 @@ class _MapScreenState extends State<MapScreen> {
       "isLike": false,
     },
   ];
+  late List<Map<String, dynamic>> _storeList;
+  late Uint8List? _storeImage;
   final List<Marker> _storeMarkers = [];
 
   @override
@@ -94,7 +94,12 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _initializeMap() async {
-    // 1초 동안 로딩 화면 유지
+    // TODO: api 요청
+    // final baseUrl = dotenv.env['BASE_URL'];
+    // final response = await _dio.get('$baseUrl/store');
+    // if (response.statusCode == 200) {
+    //   _storeList = response.data['stores'] as List<Map<String, dynamic>>;
+    // }
     _getCurrentLocation();
   }
 
@@ -109,10 +114,6 @@ class _MapScreenState extends State<MapScreen> {
       });
 
       _addNearbyStores();
-
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
@@ -120,7 +121,7 @@ class _MapScreenState extends State<MapScreen> {
     print('마커 추가');
     const double maxDistance = 4000; // 4km
     _storeMarkers.clear();
-
+    // TODO: storeList로 바꾸기
     for (var store in _dummyStores) {
       final posX = store["posX"];
       final posY = store['posY'];
@@ -142,17 +143,22 @@ class _MapScreenState extends State<MapScreen> {
             ),
             icon: BitmapDescriptor.fromBytes(
                 await getBytesFromAsset('assets/image/marker.png', 70)),
-            onTap: () => _showWithMarketDialog(context, store),
+            onTap: () {
+              _showWithMarketDialog(context, store);
+            },
           ),
         );
       }
     }
 
-    setState(() {});
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _showWithMarketDialog(BuildContext context, Map<String, dynamic> store) {
     final userState = Provider.of<UserState>(context, listen: false);
+    bool isLike = store['isLike'];
 
     showModalBottomSheet(
       context: context,
@@ -216,18 +222,20 @@ class _MapScreenState extends State<MapScreen> {
                                       );
 
                                       if (response.statusCode == 200) {
-
+                                        setState(() {
+                                          isLike = !isLike;
+                                        });
                                       }
                                     },
                                     icon: Icon(
-                                      Icons.favorite_border,
-                                      color: Colors.grey,
+                                      isLike ? Icons.favorite : Icons.favorite_border,
+                                      color: isLike ? defaultColors['green'] : defaultColors['lightGreen'],
                                     ),
                                   )
                                 : Container(),
                           ],
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(height: 24),
                         Row(
                           children: [
                             Text(
@@ -259,13 +267,13 @@ class _MapScreenState extends State<MapScreen> {
                         ? Image.asset(
                             'assets/image/store_logo.png',
                             // Replace with your image asset path
-                            width: 50,
-                            height: 50,
+                            width: 80,
+                            height: 80,
                             fit: BoxFit.cover,
                           )
                         : Container(
-                            width: 50,
-                            height: 50,
+                            width: 80,
+                            height: 80,
                             color: Colors.grey,
                           ),
                   ),
@@ -375,7 +383,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _currentPosition == null
+      body: _isLoading
           ? LoadingScreen()
           : GoogleMap(
               initialCameraPosition: CameraPosition(
