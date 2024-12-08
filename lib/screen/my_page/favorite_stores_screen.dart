@@ -1,38 +1,67 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:last_nyam/const/colors.dart';
 
-class FavoriteStoresScreen extends StatelessWidget {
+class FavoriteStoresScreen extends StatefulWidget {
+  @override
+  _FavoriteStoresScreenState createState() => _FavoriteStoresScreenState();
+}
+
+class _FavoriteStoresScreenState extends State<FavoriteStoresScreen> {
+  final _dio = Dio();
+  final _storage = const FlutterSecureStorage();
+  late List<Map<String, dynamic>> _storeList;
+
   // 더미 데이터
-  final List<Map<String, dynamic>> stores = [
+  List<Map<String, dynamic>> dummyStores = [
     {
       'name': '삼첩분식 옥계점',
       'temperature': '48.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': true,
-      'isAlertOn': false,
     },
     {
       'name': '콩자반분식 금오공대점',
       'temperature': '24.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': false,
-      'isAlertOn': true,
     },
     {
       'name': '집더하기 옥계점',
       'temperature': '36.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': true,
-      'isAlertOn': false,
     },
     {
       'name': '빅마트 옥계점',
       'temperature': '90.5°C',
       'image': null, // 이미지 데이터 없음
       'isFavorite': false,
-      'isAlertOn': true,
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _getStores();
+  }
+
+  void _getStores() async {
+    // final baseUrl = dotenv.env['BASE_URL'];
+    // String? token = await _storage.read(key: 'authToken');
+    // final response = await _dio.get(
+    //   '$baseUrl/store/like',
+    //   options: Options(
+    //     headers: {'Authorization': 'Bearer $token'},
+    //   ),
+    // );
+    //
+    // if (response.statusCode == 200) {
+    //   _storeList = response.data;
+    // }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,10 +88,10 @@ class FavoriteStoresScreen extends StatelessWidget {
       body: Container(
         color: Colors.white,
         child: ListView.separated(
-          itemCount: stores.length,
+          itemCount: dummyStores.length,
           separatorBuilder: (context, index) => Divider(),
           itemBuilder: (context, index) {
-            final store = stores[index];
+            final store = dummyStores[index];
             return ListTile(
               leading: Container(
                 width: 50,
@@ -88,24 +117,32 @@ class FavoriteStoresScreen extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: Icon(
-                      store['isAlertOn']
-                          ? Icons.notifications
-                          : Icons.notifications_none,
-                      color: defaultColors['green'],
-                    ),
-                    onPressed: () {
-                      // 알림 아이콘 클릭 이벤트 처리
-                    },
-                  ),
-                  IconButton(
-                    icon: Icon(
                       store['isFavorite']
                           ? Icons.favorite
                           : Icons.favorite_border,
                       color: defaultColors['green'],
                     ),
-                    onPressed: () {
-                      // 즐겨찾기 아이콘 클릭 이벤트 처리
+                    onPressed: () async {
+                      final baseUrl = dotenv.env['BASE_URL'];
+                      String? token =
+                          await _storage.read(key: 'authToken');
+                      final response = await _dio.post(
+                        '$baseUrl/store/like',
+                        data: {
+                          'storeId': store['storeId'],
+                        },
+                        options: Options(
+                          headers: {
+                            'Authorization': 'Bearer $token'
+                          },
+                        ),
+                      );
+
+                      if (response.statusCode == 200) {
+                        setState(() {
+                          store['isFavorite'] = !store['isFavorite'];
+                        });
+                      }
                     },
                   ),
                 ],
