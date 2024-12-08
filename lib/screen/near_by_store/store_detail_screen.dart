@@ -9,7 +9,7 @@ class StoreDetailScreen extends StatelessWidget {
       "discount": "50%",
       "price": "1,000원",
       "time": "59분",
-      "image": "assets/image/sundae.png",
+      "image": null,
     },
     {
       "category": "식자재",
@@ -17,7 +17,7 @@ class StoreDetailScreen extends StatelessWidget {
       "discount": "24%",
       "price": "2,500원",
       "time": "5시간",
-      "image": "assets/image/rice_cake.png",
+      "image": null,
     },
   ];
 
@@ -28,23 +28,20 @@ class StoreDetailScreen extends StatelessWidget {
         elevation: 0,
         backgroundColor: Colors.white,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back_ios, size: 16, color: Colors.black),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: Text(
           "삼첩분식 옥계점",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              // 검색 버튼 동작
-            },
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
-        ],
+        ),
+        centerTitle: true,
       ),
       body: ListView.builder(
         padding: EdgeInsets.all(16),
@@ -68,17 +65,6 @@ class StoreDetailScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 이미지
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    item["image"], // 이미지 경로
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-                SizedBox(width: 16),
                 // 텍스트 정보
                 Expanded(
                   child: Column(
@@ -136,6 +122,23 @@ class StoreDetailScreen extends StatelessWidget {
                         ],
                       ),
                     ],
+                  ),
+                ),
+                SizedBox(width: 16),
+                // 이미지
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: item['image'] != null
+                      ? Image.asset(
+                    item["image"], // 이미지 경로
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.cover,
+                  )
+                      : Container(
+                    width: 80,
+                    height: 80,
+                    color: Colors.grey,
                   ),
                 ),
               ],
