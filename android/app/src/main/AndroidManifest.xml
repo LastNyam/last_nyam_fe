@@ -6,6 +6,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="last_nyam"
         android:requestLegacyExternalStorage="true">
+        android:usesCleartextTraffic="true"
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyAQDIbv4z_MFxhH5IlKewUlcchETs3amCc" />
@@ -48,4 +49,6 @@
         </intent>
     </queries>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 </manifest>

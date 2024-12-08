@@ -229,6 +229,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             setState(() {
                               _isNicknameValid = false;
                               _nicknameError = '예상치 못한 에러입니다.';
+                              _isDuplicatedNickname = true;
                             });
                           }
                         },
