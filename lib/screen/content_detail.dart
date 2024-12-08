@@ -5,6 +5,7 @@ import 'home_screen.dart';
 import 'package:last_nyam/component/common/search.dart';
 
 import 'package:intl/intl.dart'; // 숫자 포맷을 위한 패키지 추가
+import 'retrieve_from_ai.dart';
 
 class ContentDetail extends StatefulWidget {
   final Product product;
@@ -26,9 +27,23 @@ class _ContentDetailState extends State<ContentDetail> {
   bool isRecipeDetailVisible = false; // 레시피 상세 설명을 보일지 여부
   String selectedRecipeDetail = ''; // 선택된 아이콘의 상세 설명
   String selectedRecipe = ''; // 추가: 선택된 레시피 아이콘 상태 저장
+  String aiRecipeResult = ''; // Python 실행 결과 저장 변수
 
   // 숫자 포맷터 생성
   final NumberFormat currencyFormat = NumberFormat("#,###");
+
+  Future<void> fetchAIRecipe(Product product) async {
+    try {
+      // RetrieveFromAI.fetchAIResult로 product 객체를 전달
+      final result = await RetrieveFromAI.fetchAIResult(product);
+      setState(() {
+        aiRecipeResult = result; // 결과를 aiRecipeResult에 저장
+      });
+    } catch (e) {
+      print("Error in fetchAIRecipe: $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -118,7 +133,7 @@ class _ContentDetailState extends State<ContentDetail> {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(20), // 원형 이미지를 위해 둥근 테두리 적용
                               child: Image.asset(
-                                'assets/image/tteopokki_card.png', // 가게 이미지 경로
+                                'assets/image/tteopokki_card.jpg', // 가게 이미지 경로
                                 width: 20, // 이미지 크기
                                 height: 20,
                                 fit: BoxFit.cover, // 이미지 비율 유지
@@ -256,13 +271,12 @@ class _ContentDetailState extends State<ContentDetail> {
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
                             GestureDetector(
-                              onTap: () {
+                              onTap: () async {
                                 setState(() {
                                   selectedRecipe = 'ai';
-                                  selectedRecipeDetail =
-                                  'AI를 활용한 추천 레시피입니다. 간단한 재료로 빠르게 요리할 수 있어요!';
                                   isRecipeDetailVisible = true;
                                 });
+                                await fetchAIRecipe(widget.product);
                               },
                               child: Stack(
                                 children: [
@@ -366,10 +380,32 @@ class _ContentDetailState extends State<ContentDetail> {
                                     fontSize: 11,
                                     height: 1.2,
                                     fontWeight: FontWeight.w300,
+                                  ),
+                                ),
+                              )
+                          ),
+
+                        if (aiRecipeResult.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  vertical: 20, horizontal: 12),
+                              color: AppColors.semiwhite,
+                              constraints: const BoxConstraints(
+                                minWidth: double.infinity,
+                              ),
+                              child: Text(
+                                aiRecipeResult,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  height: 1.2,
+                                  fontWeight: FontWeight.w300,
                                 ),
                               ),
-                            )
+                            ),
                           ),
+
                       ],
                     ),
                   ],
@@ -395,7 +431,7 @@ class _ContentDetailState extends State<ContentDetail> {
                       ? () {
                     _showPurchaseModal(context);
                   }
-                  : () {
+                      : () {
                     _showErrorDialog(context); // 예약하기 클릭 시 모달 실행
                   },
                   style: ElevatedButton.styleFrom(
@@ -457,7 +493,6 @@ class _ContentDetailState extends State<ContentDetail> {
       },
     );
   }
-
 
   void _showPurchaseModal(BuildContext context) {
     showModalBottomSheet(

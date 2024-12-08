@@ -240,7 +240,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             children: [
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_down_sharp,
-                    size: 36.0, color: defaultColors['black']),
+                    size: 36.0, color: defaultColors['lightGreen']),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -297,7 +297,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
             children: [
               IconButton(
                 icon: Icon(Icons.keyboard_arrow_down_sharp,
-                    size: 36.0, color: defaultColors['black']),
+                    size: 36.0, color: defaultColors['lightGreen']),
                 onPressed: () {
                   Navigator.pop(context);
                 },

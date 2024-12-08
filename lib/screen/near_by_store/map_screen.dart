@@ -1,8 +1,17 @@
+import 'dart:typed_data';
+import 'dart:ui';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/near_by_store/loading.dart';
+import 'package:last_nyam/screen/near_by_store/store_detail_screen.dart';
+import 'package:provider/provider.dart';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({Key? key}) : super(key: key);
@@ -13,21 +22,70 @@ class MapScreen extends StatefulWidget {
 
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
-  LatLng _currentPosition = const LatLng(37.5665, 126.9780); // 초기 위치 (서울)
+  LatLng? _currentPosition = null;
+  CameraPosition? _initialCameraPosition; // 초기 카메라 위치를 동적으로 설정
   bool _isRendering = false;
   bool _isLoading = true;
+  final _dio = Dio();
+  final _storage = const FlutterSecureStorage();
   final List<Map<String, dynamic>> _dummyStores = [
-    {"name": "삼첩분식", "position": LatLng(36.1455956, 128.3926275)},
-    {"name": "멋쟁이과일야채", "position": LatLng(36.1455864, 128.3926456)},
-    {"name": "라쿵푸마라탕", "position": LatLng(36.1455856, 128.3926487)},
-    {"name": "박가네과일", "position": LatLng(36.1455974, 128.3926217)},
-    {"name": "고령축산", "position": LatLng(36.1455996, 128.3926515)},
+    {
+      "storeId": 1,
+      "storeName": "삼첩분식",
+      "posX": LatLng(36.1455956, 128.3926275).latitude,
+      "posY": LatLng(36.1455956, 128.3926275).longitude,
+      "temperature": 36.5,
+      "address": "가게 주소",
+      "callNumber": "054-123-4567",
+      "storeImage": null,
+      "isLike": false,
+    },
+    {
+      "storeId": 2,
+      "storeName": "멋쟁이과일야채",
+      "posX": LatLng(36.1455864, 128.3926456).latitude,
+      "posY": LatLng(36.1455864, 128.3926456).longitude,
+      "temperature": 36.5,
+      "address": "가게 주소",
+      "callNumber": "054-123-4567",
+      "storeImage": null,
+      "isLike": false,
+    },
+    {
+      "storeId": 3,
+      "storeName": "라쿵푸마라탕",
+      "posX": LatLng(36.1455856, 128.3926487).latitude,
+      "posY": LatLng(36.1455856, 128.3926487).longitude,
+      "temperature": 36.5,
+      "address": "가게 주소",
+      "callNumber": "054-123-4567",
+      "storeImage": null,
+      "isLike": false,
+    },
+    {
+      "storeId": 4,
+      "storeName": "박가네과일",
+      "posX": LatLng(36.1455974, 128.3926217).latitude,
+      "posY": LatLng(36.1455974, 128.3926217).longitude,
+      "temperature": 36.5,
+      "address": "가게 주소",
+      "callNumber": "054-123-4567",
+      "storeImage": null,
+      "isLike": false,
+    },
+    {
+      "storeId": 5,
+      "storeName": "고령축산",
+      "posX": LatLng(36.1455996, 128.3926515).latitude,
+      "posY": LatLng(36.1455996, 128.3926515).longitude,
+      "temperature": 36.5,
+      "address": "가게 주소",
+      "callNumber": "054-123-4567",
+      "storeImage": null,
+      "isLike": false,
+    },
   ];
   final List<Marker> _storeMarkers = [];
-  // final Circle circle = Circle(
-  //   circleId: CircleId('Me'),
-  //   center:
-  // );
 
   @override
   void initState() {
@@ -38,10 +96,6 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _initializeMap() async {
     // 1초 동안 로딩 화면 유지
     _getCurrentLocation();
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      _isRendering = true;
-    });
   }
 
   void _getCurrentLocation() async {
@@ -54,11 +108,6 @@ class _MapScreenState extends State<MapScreen> {
         _currentPosition = LatLng(position.latitude, position.longitude);
       });
 
-      await _mapController.animateCamera(
-        CameraUpdate.newLatLng(_currentPosition),
-      );
-      print('현 위치: ${position.latitude}, ${position.longitude}');
-
       _addNearbyStores();
 
       setState(() {
@@ -67,31 +116,236 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
-  void _addNearbyStores() {
+  void _addNearbyStores() async {
+    print('마커 추가');
     const double maxDistance = 4000; // 4km
     _storeMarkers.clear();
 
     for (var store in _dummyStores) {
-      final storeLatLng = store["position"] as LatLng;
+      final posX = store["posX"];
+      final posY = store['posY'];
       final double distance = Geolocator.distanceBetween(
-        _currentPosition.latitude,
-        _currentPosition.longitude,
-        storeLatLng.latitude,
-        storeLatLng.longitude,
+        _currentPosition!.latitude,
+        _currentPosition!.longitude,
+        posX,
+        posY,
       );
+      print(distance);
 
       if (distance <= maxDistance) {
         _storeMarkers.add(
           Marker(
-            markerId: MarkerId(store["name"]),
-            position: storeLatLng,
-            infoWindow: InfoWindow(title: store["name"]),
+            markerId: MarkerId(store["storeName"]),
+            position: LatLng(posX, posY),
+            infoWindow: InfoWindow(
+              title: store["storeName"],
+            ),
+            icon: BitmapDescriptor.fromBytes(
+                await getBytesFromAsset('assets/image/marker.png', 70)),
+            onTap: () => _showWithMarketDialog(context, store),
           ),
         );
       }
     }
 
     setState(() {});
+  }
+
+  void _showWithMarketDialog(BuildContext context, Map<String, dynamic> store) {
+    final userState = Provider.of<UserState>(context, listen: false);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.keyboard_arrow_down_sharp,
+                        size: 36.0, color: defaultColors['lightGreen']),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              "${store['storeName']}",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(
+                              width: 10,
+                            ),
+                            userState.isLogin
+                                ? IconButton(
+                                    onPressed: () async {
+                                      final baseUrl = dotenv.env['BASE_URL'];
+                                      String? token =
+                                          await _storage.read(key: 'authToken');
+                                      final response = await _dio.post(
+                                        '$baseUrl/store/like',
+                                        data: {
+                                          'storeId': store['storeId'],
+                                        },
+                                        options: Options(
+                                          headers: {
+                                            'Authorization': 'Bearer $token'
+                                          },
+                                        ),
+                                      );
+
+                                      if (response.statusCode == 200) {
+
+                                      }
+                                    },
+                                    icon: Icon(
+                                      Icons.favorite_border,
+                                      color: Colors.grey,
+                                    ),
+                                  )
+                                : Container(),
+                          ],
+                        ),
+                        SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Text(
+                              "${store['temperature']}°C",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: defaultColors['green'],
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Expanded(
+                              child: LinearProgressIndicator(
+                                value: store['temperature'] / 100,
+                                // Progress (48.5%)
+                                backgroundColor: defaultColors['lightGreen'],
+                                color: defaultColors['green'],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 16),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: store['storeImage'] != null
+                        ? Image.asset(
+                            'assets/image/store_logo.png',
+                            // Replace with your image asset path
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            width: 50,
+                            height: 50,
+                            color: Colors.grey,
+                          ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Divider(
+                color: defaultColors['lightGreen'],
+              ),
+              SizedBox(
+                height: 16,
+              ),
+              Row(
+                children: [
+                  Icon(Icons.location_on, color: defaultColors['lightGreen']),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      "${store['address']}",
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 8),
+              Row(
+                children: [
+                  Icon(Icons.phone, color: defaultColors['lightGreen']),
+                  SizedBox(width: 8),
+                  Text(
+                    "${store['callNumber']}",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 16),
+              Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StoreDetailScreen(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: defaultColors['green'],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: Text(
+                    '메뉴',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<Uint8List> getBytesFromAsset(String path, int width) async {
+    ByteData data = await rootBundle.load(path);
+    Codec codec = await instantiateImageCodec(data.buffer.asUint8List(),
+        targetWidth: width);
+    FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ImageByteFormat.png))!
+        .buffer
+        .asUint8List();
   }
 
   Future<String> checkPermission() async {
@@ -121,31 +375,31 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading == true && _isRendering == false
+      body: _currentPosition == null
           ? LoadingScreen()
           : GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: _currentPosition,
-          zoom: 14,
-        ),
-        myLocationEnabled: true,
-        myLocationButtonEnabled: false,
-        mapToolbarEnabled: false,
-        compassEnabled: true,
-        rotateGesturesEnabled: false,
-        zoomControlsEnabled: false,
-        buildingsEnabled: false,
-        markers: {
-          ..._storeMarkers,
-        },
-        onMapCreated: (controller) {
-          _mapController = controller;
-        },
-      ),
+              initialCameraPosition: CameraPosition(
+                target: _currentPosition!,
+                zoom: 14,
+              ),
+              myLocationEnabled: true,
+              myLocationButtonEnabled: false,
+              mapToolbarEnabled: false,
+              compassEnabled: true,
+              rotateGesturesEnabled: false,
+              zoomControlsEnabled: false,
+              buildingsEnabled: false,
+              markers: {
+                ..._storeMarkers,
+              },
+              onMapCreated: (controller) {
+                _mapController = controller;
+              },
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           _mapController.animateCamera(
-            CameraUpdate.newLatLng(_currentPosition),
+            CameraUpdate.newLatLng(_currentPosition!),
           );
         },
         backgroundColor: Colors.white, // 버튼 배경색
