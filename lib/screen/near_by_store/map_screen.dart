@@ -65,6 +65,7 @@ class _MapScreenState extends State<MapScreen> {
     String? token = await _storage.read(key: 'authToken');
     const double maxDistance = 4000; // 4km
     _storeMarkers.clear();
+    print('여기까진 성공');
     for (var store in _storeList) {
       final posX = double.parse(store["posX"]);
       final posY = double.parse(store['posY']);

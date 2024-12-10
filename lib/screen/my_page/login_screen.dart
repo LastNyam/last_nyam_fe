@@ -188,7 +188,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login(UserState userState) async {
-    final baseUrl = dotenv.env['BASE_URL']!;
+    final baseUrl = dotenv.env['BASE_URL'];
     try {
       final response = await _dio.post(
         '$baseUrl/auth/login',
