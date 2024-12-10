@@ -40,6 +40,15 @@ class _HomeScreenState extends State<HomeScreen> {
         final data = response.data['data'] as List;
         setState(() {
           products = data.map((item) => Product.fromJson(item)).toList();
+
+          // 잔여 시간이 적은 순서로 정렬 (endTime 기준 오름차순)
+          products.sort((a, b) {
+            final endTimeA = DateTime.parse(a.endTime);
+            final endTimeB = DateTime.parse(b.endTime);
+
+            return endTimeB.compareTo(endTimeA); // 이 부분 유지
+          });
+
           isLoading = false;
         });
       } else {
@@ -154,7 +163,7 @@ class ContentCard extends StatelessWidget {
     return Container(
       width: MediaQuery.of(context).size.width * 0.9,
       constraints: const BoxConstraints(maxWidth: 350),
-      margin: const EdgeInsets.symmetric(vertical: 7),
+      margin: const EdgeInsets.symmetric(vertical: 7, horizontal: 16),
       decoration: ShapeDecoration(
         color: AppColors.whiteColor,
         shape: RoundedRectangleBorder(
@@ -185,16 +194,14 @@ class ContentCard extends StatelessWidget {
                       fontSize: 10,
                     ),
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 10),
                   // 음식 이름
                   Text(
                     product.foodName,
                     style: const TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 10
                     ),
                   ),
-                  const SizedBox(height: 5),
                   // 할인율과 할인가격
                   Row(
                     children: [
@@ -202,36 +209,25 @@ class ContentCard extends StatelessWidget {
                         '${((1 - product.discountPrice / product.originPrice) * 100).toStringAsFixed(0)}%',
                         style: const TextStyle(
                           color: AppColors.greenColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
                         ),
                       ),
                       const SizedBox(width: 5),
                       Text(
                         '$formattedDiscountPrice원',
                         style: const TextStyle(
-                          fontSize: 12,
-                        ),
-                      ),
-                      Text(
-                        '$formattedOriginalPrice원',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          decoration: TextDecoration.lineThrough, // 빗금 처리
-                          color: Colors.grey,
+                          fontSize: 15
                         ),
                       )
                     ],
                   ),
-                  const SizedBox(height: 5),
                   // 마감 시간
                   Row(
                     children: [
-                      const Icon(
-                        Icons.access_time,
-                        size: 14,
-                        color: AppColors.semigreen,
-                      ),
+                        Image.asset (
+                          'assets/icon/alarm.png',
+                          width: 14,
+                        ),
                       const SizedBox(width: 4),
                       Text(
                         getTimeDifference(product.endTime),

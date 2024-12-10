@@ -8,10 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:last_nyam/colors.dart';
 import 'package:last_nyam/component/common/search.dart';
 import 'package:intl/intl.dart'; // 숫자 포맷을 위한 패키지 추가
-import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/model/product.dart'; // Product 클래스 임포트
-import 'package:last_nyam/screen/retrieve_from_ai.dart';
-import 'package:provider/provider.dart'; // RetrieveFromAI 클래스 임포트
+import 'package:last_nyam/screen/retrieve_from_ai.dart'; // RetrieveFromAI 클래스 임포트
 
 class ContentDetail extends StatefulWidget {
   final Product product;
@@ -138,7 +136,6 @@ class _ContentDetailState extends State<ContentDetail> {
   @override
   Widget build(BuildContext context) {
     // 로딩 중일 때 로딩 스피너 표시
-    final userState = Provider.of<UserState>(context);
     if (isLoading) {
       return Scaffold(
         backgroundColor: AppColors.whiteColor,
@@ -210,6 +207,20 @@ class _ContentDetailState extends State<ContentDetail> {
           icon: const Icon(Icons.navigate_before),
           onPressed: () => Navigator.pop(context),
         ),
+        // actions: [
+        //   IconButton(
+        //     icon: Image.asset(
+        //       'assets/icon/search.png',
+        //       width: 24,
+        //     ),
+        //     onPressed: () {
+        //       showSearch(
+        //         context: context,
+        //         delegate: ProductSearchDelegate(widget.products),
+        //       );
+        //     },
+        //   ),
+        // ],
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -256,7 +267,7 @@ class _ContentDetailState extends State<ContentDetail> {
 
             // 상품 정보 및 예약 버튼
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
+              padding: const EdgeInsets.symmetric(horizontal: 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -269,12 +280,26 @@ class _ContentDetailState extends State<ContentDetail> {
                         productDetail!.storeName,
                         style: const TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isLiked = !isLiked; // 하트 상태 변경
+                          });
+                        },
+                        child: Icon(
+                          isLiked
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: isLiked
+                              ? AppColors.greenColor
+                              : AppColors.semigreen,
                         ),
                       ),
                     ],
                   ),
-                  const Divider(thickness: 0.5),
+                  const Divider(thickness: 0.3),
                   const SizedBox(height: 10),
 
                   // 상품 유형
@@ -285,41 +310,39 @@ class _ContentDetailState extends State<ContentDetail> {
                     style: const TextStyle(
                       color: AppColors.semigreen,
                       fontSize: 12,
-                      fontWeight: FontWeight.w400,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   // 상품 이름
                   Text(
                     productDetail!.foodName,
-                    style: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 15),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 2),
 
                   // 할인 정보
                   Row(
                     children: [
                       // 할인율 계산 (예: 원가 대비 할인된 가격의 비율)
                       Text(
-                        '할인율: ${calculateDiscountRate(productDetail!.originPrice, productDetail!.discountPrice).toStringAsFixed(1)}%',
+                        '${calculateDiscountRate(productDetail!.originPrice, productDetail!.discountPrice).toStringAsFixed(1)}%',
                         style: const TextStyle(
                           color: AppColors.greenColor,
-                          fontSize: 16,
+                          fontSize: 15,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 8),
                       // 할인된 가격
                       Text(
                         '${currencyFormat.format(productDetail!.discountPrice)}원',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 15,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 40),
 
                   // 상품 설명
                   Text(
@@ -327,12 +350,12 @@ class _ContentDetailState extends State<ContentDetail> {
                         ? productDetail!.content
                         : '상품 설명이 없습니다.',
                     style: const TextStyle(
-                      fontSize: 14,
+                      fontSize: 12,
                       fontWeight: FontWeight.w300,
                     ),
                   ),
-                  const Divider(thickness: 0.5),
-                  const SizedBox(height: 20),
+                  const Divider(thickness: 0.3),
+                  const SizedBox(height: 10),
 
                   // 추천 레시피 섹션
                   Column(
@@ -529,7 +552,7 @@ class _ContentDetailState extends State<ContentDetail> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed:  productDetail!.count > 0 && userState.isLogin
+                    onPressed: productDetail!.count > 0
                         ? () {
                       _showPurchaseModal(context);
                     }
@@ -537,7 +560,7 @@ class _ContentDetailState extends State<ContentDetail> {
                       _showErrorDialog(context); // 예약하기 클릭 시 모달 실행
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: productDetail!.count > 0 && userState.isLogin
+                      backgroundColor: productDetail!.count > 0
                           ? AppColors.greenColor
                           : AppColors.semigreen,
                       shape: RoundedRectangleBorder(
@@ -581,8 +604,6 @@ class _ContentDetailState extends State<ContentDetail> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final userState = Provider.of<UserState>(context, listen: false);
-
         return AlertDialog(
           shape:
           RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -590,8 +611,8 @@ class _ContentDetailState extends State<ContentDetail> {
             '예약 불가',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          content: Text(
-            !userState.isLogin ? '로그인 후 이용가능합니다.' : '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
+          content: const Text(
+            '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
           actions: [
