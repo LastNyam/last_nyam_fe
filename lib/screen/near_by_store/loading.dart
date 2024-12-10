@@ -15,7 +15,7 @@ class LoadingScreen extends StatelessWidget {
           ),
           SizedBox(height: 20),
           Text(
-            "현재 위치를 불러오는 중입니다...",
+            "로딩중입니다...",
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
         ],

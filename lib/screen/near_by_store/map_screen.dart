@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:typed_data';
-import 'dart:ui';
+import 'dart:ui' as ui;
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,68 +24,11 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   late GoogleMapController _mapController;
   LatLng? _currentPosition = null;
-  CameraPosition? _initialCameraPosition; // 초기 카메라 위치를 동적으로 설정
-  bool _isRendering = false;
   bool _isLoading = true;
   final _dio = Dio();
   final _storage = const FlutterSecureStorage();
-  final List<Map<String, dynamic>> _dummyStores = [
-    {
-      "storeId": 1,
-      "storeName": "삼첩분식",
-      "posX": LatLng(36.1455956, 128.3926275).latitude,
-      "posY": LatLng(36.1455956, 128.3926275).longitude,
-      "temperature": 36.5,
-      "address": "가게 주소",
-      "callNumber": "054-123-4567",
-      "storeImage": null,
-      "isLike": false,
-    },
-    {
-      "storeId": 2,
-      "storeName": "멋쟁이과일야채",
-      "posX": LatLng(36.1455864, 128.3926456).latitude,
-      "posY": LatLng(36.1455864, 128.3926456).longitude,
-      "temperature": 36.5,
-      "address": "가게 주소",
-      "callNumber": "054-123-4567",
-      "storeImage": null,
-      "isLike": false,
-    },
-    {
-      "storeId": 3,
-      "storeName": "라쿵푸마라탕",
-      "posX": LatLng(36.1455856, 128.3926487).latitude,
-      "posY": LatLng(36.1455856, 128.3926487).longitude,
-      "temperature": 36.5,
-      "address": "가게 주소",
-      "callNumber": "054-123-4567",
-      "storeImage": null,
-      "isLike": false,
-    },
-    {
-      "storeId": 4,
-      "storeName": "박가네과일",
-      "posX": LatLng(36.1455974, 128.3926217).latitude,
-      "posY": LatLng(36.1455974, 128.3926217).longitude,
-      "temperature": 36.5,
-      "address": "가게 주소",
-      "callNumber": "054-123-4567",
-      "storeImage": null,
-      "isLike": false,
-    },
-    {
-      "storeId": 5,
-      "storeName": "고령축산",
-      "posX": LatLng(36.1455996, 128.3926515).latitude,
-      "posY": LatLng(36.1455996, 128.3926515).longitude,
-      "temperature": 36.5,
-      "address": "가게 주소",
-      "callNumber": "054-123-4567",
-      "storeImage": null,
-      "isLike": false,
-    },
-  ];
+  late List<dynamic> _storeList;
+  Uint8List? _storeImage = null;
   final List<Marker> _storeMarkers = [];
 
   @override
@@ -94,7 +38,11 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _initializeMap() async {
-    // 1초 동안 로딩 화면 유지
+    final baseUrl = dotenv.env['BASE_URL'];
+    final response = await _dio.get('$baseUrl/store');
+    if (response.statusCode == 200) {
+      _storeList = response.data['data'];
+    }
     _getCurrentLocation();
   }
 
@@ -109,21 +57,15 @@ class _MapScreenState extends State<MapScreen> {
       });
 
       _addNearbyStores();
-
-      setState(() {
-        _isLoading = false;
-      });
     }
   }
 
   void _addNearbyStores() async {
-    print('마커 추가');
     const double maxDistance = 4000; // 4km
     _storeMarkers.clear();
-
-    for (var store in _dummyStores) {
-      final posX = store["posX"];
-      final posY = store['posY'];
+    for (var store in _storeList) {
+      final posX = double.parse(store["posX"]);
+      final posY = double.parse(store['posY']);
       final double distance = Geolocator.distanceBetween(
         _currentPosition!.latitude,
         _currentPosition!.longitude,
@@ -142,17 +84,47 @@ class _MapScreenState extends State<MapScreen> {
             ),
             icon: BitmapDescriptor.fromBytes(
                 await getBytesFromAsset('assets/image/marker.png', 70)),
-            onTap: () => _showWithMarketDialog(context, store),
+            onTap: () async {
+              Map<String, dynamic> storeInfo = {};
+              try {
+                final baseUrl = dotenv.env['BASE_URL'];
+                final response =
+                    await _dio.get('$baseUrl/store/${store['storeId']}');
+                if (response.statusCode == 200) {
+                  storeInfo = response.data['data'];
+                  print(storeInfo);
+                  if (response.data['data']['storeImage'] != null) {
+                    setState(() {
+                      _storeImage = Uint8List.fromList(
+                          base64Decode(response.data['data']['storeImage']));
+                    });
+                  } else {
+                    setState(() {
+                      _storeImage = null;
+                    });
+                  }
+                }
+                _showWithMarketDialog(
+                    context, {'storeId': store['storeId'], ...storeInfo});
+              } on DioError catch (e) {
+                print('가게 상세 조회 실패: ${e.response?.data}');
+              }
+            },
           ),
         );
       }
     }
 
-    setState(() {});
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _showWithMarketDialog(BuildContext context, Map<String, dynamic> store) {
     final userState = Provider.of<UserState>(context, listen: false);
+    bool isLike = store['isLike'];
+    print('전체슽오어: $store');
+    print('이즈라이크: $isLike');
 
     showModalBottomSheet(
       context: context,
@@ -200,34 +172,46 @@ class _MapScreenState extends State<MapScreen> {
                             userState.isLogin
                                 ? IconButton(
                                     onPressed: () async {
-                                      final baseUrl = dotenv.env['BASE_URL'];
-                                      String? token =
-                                          await _storage.read(key: 'authToken');
-                                      final response = await _dio.post(
-                                        '$baseUrl/store/like',
-                                        data: {
-                                          'storeId': store['storeId'],
-                                        },
-                                        options: Options(
-                                          headers: {
-                                            'Authorization': 'Bearer $token'
+                                      try {
+                                        final baseUrl = dotenv.env['BASE_URL'];
+                                        String? token = await _storage.read(
+                                            key: 'authToken');
+                                        print('스또아 아디이 ${store}');
+                                        final response = !isLike ? await _dio.post(
+                                          '$baseUrl/store/like',
+                                          data: {
+                                            'storeId': store['storeId'],
                                           },
-                                        ),
-                                      );
+                                          options: Options(
+                                            headers: {
+                                              'Authorization': 'Bearer $token'
+                                            },
+                                          ),
+                                        ) : await _dio.delete('$baseUrl/store/${store['storeId']}/like', options: Options(headers: {'Authorization': 'Bearer $token'}));
 
-                                      if (response.statusCode == 200) {
-
+                                        if (response.statusCode == 200) {
+                                          setState(() {
+                                            isLike = !isLike;
+                                          });
+                                        }
+                                      } on DioError catch (e) {
+                                        print(
+                                            '관심매장 등록 실패: ${e.response?.data}');
                                       }
                                     },
                                     icon: Icon(
-                                      Icons.favorite_border,
-                                      color: Colors.grey,
+                                      isLike
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color: isLike
+                                          ? defaultColors['green']
+                                          : defaultColors['lightGreen'],
                                     ),
                                   )
                                 : Container(),
                           ],
                         ),
-                        SizedBox(height: 4),
+                        SizedBox(height: 24),
                         Row(
                           children: [
                             Text(
@@ -255,17 +239,14 @@ class _MapScreenState extends State<MapScreen> {
                   SizedBox(width: 16),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: store['storeImage'] != null
-                        ? Image.asset(
-                            'assets/image/store_logo.png',
-                            // Replace with your image asset path
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
+                    child: _storeImage != null
+                        ? Image.memory(
+                            _storeImage!,
+                            scale: 0.6,
                           )
                         : Container(
-                            width: 50,
-                            height: 50,
+                            width: 80,
+                            height: 80,
                             color: Colors.grey,
                           ),
                   ),
@@ -315,7 +296,8 @@ class _MapScreenState extends State<MapScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StoreDetailScreen(),
+                        builder: (context) =>
+                            StoreDetailScreen(storeId: store['storeId'].toString(), storeName: store['storeName'],),
                       ),
                     );
                   },
@@ -340,10 +322,10 @@ class _MapScreenState extends State<MapScreen> {
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
-    Codec codec = await instantiateImageCodec(data.buffer.asUint8List(),
+    ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(),
         targetWidth: width);
-    FrameInfo fi = await codec.getNextFrame();
-    return (await fi.image.toByteData(format: ImageByteFormat.png))!
+    ui.FrameInfo fi = await codec.getNextFrame();
+    return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!
         .buffer
         .asUint8List();
   }
@@ -375,7 +357,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _currentPosition == null
+      body: _isLoading
           ? LoadingScreen()
           : GoogleMap(
               initialCameraPosition: CameraPosition(

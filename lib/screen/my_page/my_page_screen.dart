@@ -1,7 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/screen/my_page/favorite_stores_screen.dart';
@@ -20,22 +18,16 @@ class MyPageScreen extends StatefulWidget {
 
 class _MyPageScreenState extends State<MyPageScreen> {
   final _storage = const FlutterSecureStorage();
-  final _dio = Dio();
 
   @override
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
+    print(userState.profileImage);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: defaultColors['white'],
         elevation: 0,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_none, color: defaultColors['black']),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -205,15 +197,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           color: defaultColors['lightGreen']),
                       onTap: () => _showLogoutDialog(context),
                     ),
-                  if (userState.isLogin)
-                    ListTile(
-                      leading: Icon(Icons.person_remove_outlined,
-                          color: defaultColors['black']),
-                      title: Text('탈퇴'),
-                      trailing: Icon(Icons.chevron_right,
-                          color: defaultColors['lightGreen']),
-                      onTap: () => _showWithdrawalDialog(context),
-                    ),
                 ],
               ),
             ),
@@ -266,79 +249,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                 ),
                 child: Text(
                   '로그아웃',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: defaultColors['white'],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showWithdrawalDialog(BuildContext context) {
-    final userState = Provider.of<UserState>(context, listen: false);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: Icon(Icons.keyboard_arrow_down_sharp,
-                    size: 36.0, color: defaultColors['lightGreen']),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              Text(
-                '탈퇴하면 \‘라스트 냠\’의 기능을 이용하지 못함과 동시에 사용 기록이 소멸됩니다.\n정말 탈퇴하시겠습니까?',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14),
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  try {
-                    final baseUrl = dotenv.env['BASE_URL'];
-                    String? token = await _storage.read(key: 'authToken');
-                    final response = await _dio.delete(
-                      '$baseUrl/auth/signout',
-                      options: Options(
-                        headers: {'Authorization': 'Bearer $token'},
-                      ),
-                    );
-
-                    if (response.statusCode == 200) {
-                      await _storage.delete(key: 'authToken');
-                      userState.initState();
-                    }
-                  } catch (e) {
-                    print('회원 탈퇴 실패: $e');
-                  }
-
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: defaultColors['green'],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5.0),
-                  ),
-                  minimumSize: Size(double.infinity, 50),
-                ),
-                child: Text(
-                  '탈퇴',
                   style: TextStyle(
                     fontSize: 16,
                     color: defaultColors['white'],
