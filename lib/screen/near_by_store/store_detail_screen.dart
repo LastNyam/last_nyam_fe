@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:last_nyam/const/colors.dart';
 import 'package:dio/dio.dart';
+import 'package:last_nyam/screen/content_detail.dart';
+import 'package:last_nyam/model/product.dart';
 
 class StoreDetailScreen extends StatefulWidget {
   final String storeId;
@@ -16,7 +18,7 @@ class StoreDetailScreen extends StatefulWidget {
 }
 
 class _StoreDetailScreenState extends State<StoreDetailScreen> {
-  List<dynamic> storeData = [];
+  List<Product> products = []; // Product 타입으로 변경
   bool isLoading = true;
 
   @override
@@ -29,10 +31,10 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
     try {
       final baseUrl = dotenv.env['BASE_URL'];
       final response = await Dio().get('$baseUrl/food/store/${widget.storeId}');
-      print(response.data['data']);
       if (response.statusCode == 200) {
+        final data = response.data['data'] as List;
         setState(() {
-          storeData = response.data['data'];
+          products = data.map((item) => Product.fromJson(item)).toList();
           isLoading = false;
         });
       } else {
@@ -40,31 +42,25 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
       }
     } catch (e) {
       print('Error fetching store data: $e');
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   String _getTimeDifference(String inputTimeString) {
     DateTime inputTime = DateTime.parse(inputTimeString);
-
-    // 현재 시간
     DateTime currentTime = DateTime.now();
-
-    // 시간 차이 계산
     Duration difference = currentTime.difference(inputTime);
 
-    // 분 단위와 시간 단위로 변환
     int differenceInMinutes = difference.inMinutes;
     int differenceInHours = difference.inHours;
 
-    // 출력 메시지
-    String result;
     if (differenceInMinutes < 60) {
-      result = "$differenceInMinutes 분";
+      return "$differenceInMinutes 분";
     } else {
-      result = "$differenceInHours 시간";
+      return "$differenceInHours 시간";
     }
-
-    return result;
   }
 
   @override
@@ -91,110 +87,128 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
+          : products.isEmpty
+          ? Center(child: Text('등록된 상품이 없습니다.'))
           : ListView.builder(
-              padding: EdgeInsets.all(16),
-              itemCount: storeData.length,
-              itemBuilder: (context, index) {
-                final item = storeData[index];
-                return Container(
-                  margin: EdgeInsets.only(bottom: 16),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        blurRadius: 6,
-                        offset: Offset(0, 3),
-                      ),
-                    ],
+        padding: EdgeInsets.all(16),
+        itemCount: products.length,
+        itemBuilder: (context, index) {
+          final product = products[index];
+
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ContentDetail(
+                    product: product, // Product 객체 전달
+                    products: products, // 전체 리스트 전달 (필요시)
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // 텍스트 정보
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+              );
+            },
+            child: Container(
+              margin: EdgeInsets.only(bottom: 16),
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 텍스트 정보
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          product.foodCategory,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Text(
+                          product.foodName,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 4),
+                        Row(
                           children: [
                             Text(
-                              item["foodCategory"],
+                              '${((product.discountPrice / product.originPrice) * 100).toInt()}%',
                               style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
+                                fontSize: 16,
+                                color: defaultColors['green'],
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            SizedBox(width: 8),
                             Text(
-                              item["foodName"],
+                              '${product.originPrice}원',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Text(
-                                  '${(((item["discountPrice"]) / (item['originPrice'])) * 100).toInt()}%',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    color: defaultColors['green'],
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  item["originPrice"].toString(),
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Icon(Icons.access_time,
-                                    size: 16, color: Colors.grey),
-                                SizedBox(width: 4),
-                                Text(
-                                  _getTimeDifference(item['endTime']),
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                              ],
+                          ],
+                        ),
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(Icons.access_time,
+                                size: 16, color: Colors.grey),
+                            SizedBox(width: 4),
+                            Text(
+                              _getTimeDifference(product.endTime),
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
                             ),
                           ],
                         ),
-                      ),
-                      SizedBox(width: 16),
-                      // 이미지
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: item['image'] != null
-                            ? Image.memory(
-                                Uint8List.fromList(
-                                    base64Decode(item["image"])), // 이
-                                width: 80,
-                                height: 80, // 미지 경로
-                              )
-                            : Container(
-                                width: 80,
-                                height: 80,
-                                color: Colors.grey,
-                              ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                );
-              },
+                  SizedBox(width: 16),
+
+                  // 이미지
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: product.image.isNotEmpty
+                        ? Image.memory(
+                      Uint8List.fromList(
+                          base64Decode(product.image)),
+                      width: 80,
+                      height: 80,
+                      fit: BoxFit.cover,
+                    )
+                        : Container(
+                      width: 80,
+                      height: 80,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
             ),
+          );
+        },
+      ),
       backgroundColor: Colors.grey[200],
     );
   }
