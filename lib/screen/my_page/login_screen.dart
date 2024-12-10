@@ -8,6 +8,7 @@ import 'package:last_nyam/screen/my_page/sign_up_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:last_nyam/const/colors.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -238,6 +239,15 @@ class _LoginScreenState extends State<LoginScreen> {
         _passwordError = '계정이 존재하지 않거나, 비밀번호가 일치하지 않습니다.';
       });
     }
+
+    final FcmService _fcmService = FcmService();
+
+    /// FCM 초기화 호출
+    await _fcmService.initializeFcm();
+    String? token = await _fcmService._messaging.getToken();
+    if (token != null) {
+      await _fcmService.sendTokenToServer(token);
+    }
   }
 
   void _validatePhoneNumber() {
@@ -267,5 +277,65 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() {
       _isValid = _isPhoneNumberValid;
     });
+  }
+}
+
+class ApiService {
+  final Dio _dio = Dio();
+  final FlutterSecureStorage _storage = FlutterSecureStorage();
+  final baseUrl = dotenv.env['BASE_URL']!;
+
+  Future<void> sendFcmToken(String fcmToken) async {
+    try {
+      String? token = await _storage.read(key: 'authToken');
+
+      final response = await _dio.post(
+        '$baseUrl/auth/fcm/register',
+        data: {'token': fcmToken},
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'Content-Type': 'application/json'
+          },
+        ),
+      );
+      print("FCM token sent to server: ${response.data}");
+    } catch (e) {
+      print("Failed to send FCM token to server: $e");
+      throw e; // 필요한 경우 예외를 상위로 전달
+    }
+  }
+}
+
+class FcmService {
+  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  final ApiService _apiService = ApiService();
+
+  /// FCM 초기화 및 토큰 가져오기
+  Future<void> initializeFcm() async {
+    // FCM 권한 요청
+    await _messaging.requestPermission();
+
+    // FCM 토큰 가져오기
+    String? token = await _messaging.getToken();
+    if (token != null) {
+      print("FCM Token: $token");
+      await sendTokenToServer(token);
+    }
+
+    // FCM 메시지 리스너 설정
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received: ${message.notification?.title}");
+    });
+  }
+
+  /// 서버로 FCM 토큰 전송
+  Future<void> sendTokenToServer(String token) async {
+    try {
+      await _apiService.sendFcmToken(token);
+      print("FCM token sent to server successfully.");
+    } catch (e) {
+      print("Error sending FCM token to server: $e");
+    }
   }
 }

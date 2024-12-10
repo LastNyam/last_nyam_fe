@@ -7,12 +7,38 @@ import 'package:provider/provider.dart';
 import 'package:last_nyam/component/provider/user_state.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:last_nyam/colors.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("Background Message: ${message.messageId}");
+}
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =  FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load the .env file
   await dotenv.load(fileName: "assets/env/.env");
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+  // Initialize local notifications
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+
+  const InitializationSettings initializationSettings =
+  InitializationSettings(android: initializationSettingsAndroid);
+
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
 
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp, // 세로 방향 고정
