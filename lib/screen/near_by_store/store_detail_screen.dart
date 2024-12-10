@@ -59,9 +59,9 @@ class _StoreDetailScreenState extends State<StoreDetailScreen> {
     // 출력 메시지
     String result;
     if (differenceInMinutes < 60) {
-      result = "$differenceInMinutes 분 전";
+      result = "$differenceInMinutes 분";
     } else {
-      result = "$differenceInHours 시간 전";
+      result = "$differenceInHours 시간";
     }
 
     return result;
