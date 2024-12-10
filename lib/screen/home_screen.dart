@@ -114,6 +114,30 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+String getTimeDifference(String inputTimeString) {
+  DateTime inputTime = DateTime.parse(inputTimeString);
+
+  // 현재 시간
+  DateTime currentTime = DateTime.now();
+
+  // 시간 차이 계산
+  Duration difference = currentTime.difference(inputTime);
+
+  // 분 단위와 시간 단위로 변환
+  int differenceInMinutes = difference.inMinutes;
+  int differenceInHours = difference.inHours;
+
+  // 출력 메시지
+  String result;
+  if (differenceInMinutes < 60) {
+    result = "$differenceInMinutes 분";
+  } else {
+    result = "$differenceInHours 시간";
+  }
+
+  return result;
+}
+
 // lib/screen/home_screen.dart
 
 class ContentCard extends StatelessWidget {
@@ -220,7 +244,7 @@ class ContentCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        product.endTime,
+                        getTimeDifference(product.endTime),
                         style: const TextStyle(fontSize: 10),
                       ),
                     ],

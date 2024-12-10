@@ -2,9 +2,12 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:last_nyam/component/provider/user_state.dart';
+import 'package:last_nyam/const/colors.dart';
 import 'package:last_nyam/model/product.dart';
 import 'package:last_nyam/service/reservation_service.dart';
 import 'package:last_nyam/widget/order_item.dart';
+import 'package:provider/provider.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({Key? key}) : super(key: key);
@@ -98,6 +101,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final userState = Provider.of<UserState>(context);
+
     if (isLoading) {
       return Scaffold(
         appBar: AppBar(
@@ -121,7 +126,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       );
     }
 
-    return Scaffold(
+    return userState.isLogin ? Scaffold(
       appBar: AppBar(
         title: const Text('주문 내역'),
       ),
@@ -150,6 +155,12 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             );
           },
         ),
+      ),
+    ) : Center(
+      child: Text(
+        '로그인 후 이용가능합니다.',
+        style:
+        TextStyle(color: defaultColors['lightGreen'], fontSize: 18),
       ),
     );
   }
