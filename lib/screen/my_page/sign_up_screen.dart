@@ -373,6 +373,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
               _validatePhoneNumber();
             }
 
+            if (type == 'nickname') {
+              _validateNickname();
+            }
+
             if (type == 'new' || type == 'confirm') {
               _validatePassword();
               _validateConfirmPassword();
@@ -417,6 +421,8 @@ class _SignUpScreenState extends State<SignUpScreen> {
   void _validateNickname() {
     setState(() {
       String nickname = _nicknameController.text;
+
+      _isDuplicatedNickname = true;
 
       if (validateNickname(nickname)) {
         _isNicknameValid = true;
