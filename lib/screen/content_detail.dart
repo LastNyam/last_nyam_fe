@@ -329,7 +329,7 @@ class _ContentDetailState extends State<ContentDetail> {
                     children: [
                       // 할인율 계산 (예: 원가 대비 할인된 가격의 비율)
                       Text(
-                        '할인율: ${calculateDiscountRate(productDetail!.originPrice, productDetail!.discountPrice)}%',
+                        '할인율: ${calculateDiscountRate(productDetail!.originPrice, productDetail!.discountPrice).toStringAsFixed(1)}%',
                         style: const TextStyle(
                           color: AppColors.greenColor,
                           fontSize: 16,
