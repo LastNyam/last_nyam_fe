@@ -61,6 +61,8 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _addNearbyStores() async {
+    final userState = Provider.of<UserState>(context, listen: false);
+    String? token = await _storage.read(key: 'authToken');
     const double maxDistance = 4000; // 4km
     _storeMarkers.clear();
     for (var store in _storeList) {
@@ -88,8 +90,14 @@ class _MapScreenState extends State<MapScreen> {
               Map<String, dynamic> storeInfo = {};
               try {
                 final baseUrl = dotenv.env['BASE_URL'];
-                final response =
-                    await _dio.get('$baseUrl/store/${store['storeId']}');
+                final response = !userState.isLogin
+                    ? await _dio.get('$baseUrl/store/${store['storeId']}')
+                    : await _dio.get(
+                        '$baseUrl/store/${store['storeId']}',
+                        options: Options(
+                          headers: {'Authorization': 'Bearer $token'},
+                        ),
+                      );
                 if (response.statusCode == 200) {
                   storeInfo = response.data['data'];
                   print(storeInfo);
@@ -122,9 +130,6 @@ class _MapScreenState extends State<MapScreen> {
 
   void _showWithMarketDialog(BuildContext context, Map<String, dynamic> store) {
     final userState = Provider.of<UserState>(context, listen: false);
-    bool isLike = store['isLike'];
-    print('전체슽오어: $store');
-    print('이즈라이크: $isLike');
 
     showModalBottomSheet(
       context: context,
@@ -133,192 +138,213 @@ class _MapScreenState extends State<MapScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: Icon(Icons.keyboard_arrow_down_sharp,
-                        size: 36.0, color: defaultColors['lightGreen']),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "${store['storeName']}",
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 10,
-                            ),
-                            userState.isLogin
-                                ? IconButton(
-                                    onPressed: () async {
-                                      try {
-                                        final baseUrl = dotenv.env['BASE_URL'];
-                                        String? token = await _storage.read(
-                                            key: 'authToken');
-                                        print('스또아 아디이 ${store}');
-                                        final response = !isLike ? await _dio.post(
-                                          '$baseUrl/store/like',
-                                          data: {
-                                            'storeId': store['storeId'],
-                                          },
-                                          options: Options(
-                                            headers: {
-                                              'Authorization': 'Bearer $token'
-                                            },
-                                          ),
-                                        ) : await _dio.delete('$baseUrl/store/${store['storeId']}/like', options: Options(headers: {'Authorization': 'Bearer $token'}));
+        return StatefulBuilder(
+          builder: (context, setState) {
+            bool isLike = store['isLike']; // 좋아요 초기 상태
 
-                                        if (response.statusCode == 200) {
-                                          setState(() {
-                                            isLike = !isLike;
-                                          });
-                                        }
-                                      } on DioError catch (e) {
-                                        print(
-                                            '관심매장 등록 실패: ${e.response?.data}');
-                                      }
-                                    },
-                                    icon: Icon(
-                                      isLike
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color: isLike
-                                          ? defaultColors['green']
-                                          : defaultColors['lightGreen'],
-                                    ),
-                                  )
-                                : Container(),
-                          ],
-                        ),
-                        SizedBox(height: 24),
-                        Row(
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0, 16.0, 16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.keyboard_arrow_down_sharp,
+                            size: 36.0, color: defaultColors['lightGreen']),
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "${store['temperature']}°C",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: defaultColors['green'],
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  "${store['storeName']}",
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 10,
+                                ),
+                                userState.isLogin
+                                    ? IconButton(
+                                  onPressed: () async {
+                                    try {
+                                      final baseUrl =
+                                      dotenv.env['BASE_URL'];
+                                      String? token = await _storage.read(
+                                          key: 'authToken');
+                                      final response = !isLike
+                                          ? await _dio.post(
+                                        '$baseUrl/store/like',
+                                        data: {
+                                          'storeId':
+                                          store['storeId'],
+                                        },
+                                        options: Options(
+                                          headers: {
+                                            'Authorization':
+                                            'Bearer $token'
+                                          },
+                                        ),
+                                      )
+                                          : await _dio.delete(
+                                        '$baseUrl/store/${store['storeId']}/like',
+                                        options: Options(headers: {
+                                          'Authorization':
+                                          'Bearer $token'
+                                        }),
+                                      );
+
+                                      if (response.statusCode == 200) {
+                                        setState(() {
+                                          isLike = !isLike; // 상태 토글
+                                          store['isLike'] = isLike; // 업데이트된 상태 반영
+                                        });
+                                      }
+                                    } on DioError catch (e) {
+                                      print(
+                                          '관심매장 등록 실패: ${e.response?.data}');
+                                    }
+                                  },
+                                  icon: Icon(
+                                    isLike
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color: isLike
+                                        ? defaultColors['green']
+                                        : defaultColors['lightGreen'],
+                                  ),
+                                )
+                                    : Container(),
+                              ],
                             ),
-                            SizedBox(width: 4),
-                            Expanded(
-                              child: LinearProgressIndicator(
-                                value: store['temperature'] / 100,
-                                // Progress (48.5%)
-                                backgroundColor: defaultColors['lightGreen'],
-                                color: defaultColors['green'],
-                              ),
+                            SizedBox(height: 24),
+                            Row(
+                              children: [
+                                Text(
+                                  "${store['temperature']}°C",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: defaultColors['green'],
+                                  ),
+                                ),
+                                SizedBox(width: 4),
+                                Expanded(
+                                  child: LinearProgressIndicator(
+                                    value: store['temperature'] / 100,
+                                    // Progress (48.5%)
+                                    backgroundColor:
+                                    defaultColors['lightGreen'],
+                                    color: defaultColors['green'],
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: 16),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: _storeImage != null
+                            ? Image.memory(
+                          _storeImage!,
+                          scale: 0.6,
+                        )
+                            : Container(
+                          width: 80,
+                          height: 80,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 16),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: _storeImage != null
-                        ? Image.memory(
-                            _storeImage!,
-                            scale: 0.6,
-                          )
-                        : Container(
-                            width: 80,
-                            height: 80,
-                            color: Colors.grey,
+                  SizedBox(height: 16),
+                  Divider(
+                    color: defaultColors['lightGreen'],
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, color: defaultColors['lightGreen']),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          "${store['address']}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.black,
                           ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Divider(
-                color: defaultColors['lightGreen'],
-              ),
-              SizedBox(
-                height: 16,
-              ),
-              Row(
-                children: [
-                  Icon(Icons.location_on, color: defaultColors['lightGreen']),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      "${store['address']}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
+                  SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.phone, color: defaultColors['lightGreen']),
+                      SizedBox(width: 8),
+                      Text(
+                        "${store['callNumber']}",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StoreDetailScreen(
+                              storeId: store['storeId'].toString(),
+                              storeName: store['storeName'],
+                            ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: defaultColors['green'],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: Text(
+                        '메뉴',
+                        style: TextStyle(color: Colors.white),
                       ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(Icons.phone, color: defaultColors['lightGreen']),
-                  SizedBox(width: 8),
-                  Text(
-                    "${store['callNumber']}",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            StoreDetailScreen(storeId: store['storeId'].toString(), storeName: store['storeName'],),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: defaultColors['green'],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: Text(
-                    '메뉴',
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
   }
+
 
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
