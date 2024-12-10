@@ -131,40 +131,6 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                 ),
               ),
               Divider(height: 30, thickness: 1, color: Colors.grey[200]),
-              // 비밀번호 변경 섹션
-              ListTile(
-                title: Text(
-                  '비밀번호 변경',
-                  style: TextStyle(fontSize: 16),
-                ),
-                trailing: Icon(Icons.chevron_right,
-                    color: defaultColors['lightGreen']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PasswordChangeScreen(),
-                    ),
-                  );
-                },
-              ),
-              // 휴대폰 번호 변경 섹션
-              ListTile(
-                title: Text(
-                  '휴대폰 번호 변경',
-                  style: TextStyle(fontSize: 16),
-                ),
-                trailing: Icon(Icons.chevron_right,
-                    color: defaultColors['lightGreen']),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => PhoneNumberChangeScreen(),
-                    ),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -213,9 +179,12 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     try {
       String? token = await _storage.read(key: 'authToken');
       final baseUrl = dotenv.env['BASE_URL']!;
+      FormData formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(Uint8List(0), filename: "assets/image/profile_image.png"),
+      });
       final response = await _dio.patch(
         '$baseUrl/auth/profile-image',
-        data: null,
+        data: formData,
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 

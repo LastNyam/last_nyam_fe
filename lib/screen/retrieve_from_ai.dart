@@ -1,18 +1,18 @@
 import 'dart:convert'; // JSON 처리
 import 'package:http/http.dart' as http;
-import 'package:last_nyam/screen/home_screen.dart';
+import 'package:last_nyam/model/product.dart';
 
 class RetrieveFromAI {
-  static Future<String> fetchAIResult(Product product) async {
+  static Future<String> fetchAIResult(ProductDetail productDetail, Product product) async {
     try {
       // Flask API URL 설정
       final String apiUrl = "http://192.168.63.55:5000/generate-recipe";
 
       // 요청 본문 데이터
       final Map<String, dynamic> requestData = {
-        "type": product.type,
-        "title": product.title,
-        "info": product.detail,
+        "type": product.foodCategory,
+        "title": productDetail.foodName,
+        "info": productDetail.content,
       };
 
       // Flask API에 POST 요청

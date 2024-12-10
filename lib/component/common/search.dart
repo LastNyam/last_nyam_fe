@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:last_nyam/screen/home_screen.dart'; // Product 모델 경로에 맞게 수정하세요.
+import 'package:last_nyam/model/product.dart'; // Product 모델 경로에 맞게 수정하세요.
 
 class ProductSearchDelegate extends SearchDelegate {
   final List<Product> products;
@@ -34,7 +34,7 @@ class ProductSearchDelegate extends SearchDelegate {
   Widget buildResults(BuildContext context) {
     // 검색 결과 화면
     final results = products.where((product) =>
-        product.title.toLowerCase().contains(query.toLowerCase())
+        product.foodName.toLowerCase().contains(query.toLowerCase())
     ).toList();
 
     return ListView.builder(
@@ -42,7 +42,7 @@ class ProductSearchDelegate extends SearchDelegate {
       itemBuilder: (context, index) {
         final product = results[index];
         return ListTile(
-          title: Text(product.title),
+          title: Text(product.foodName),
           onTap: () {
             close(context, product);
           },
@@ -55,7 +55,7 @@ class ProductSearchDelegate extends SearchDelegate {
   Widget buildSuggestions(BuildContext context) {
     // 검색창에 입력할 때 추천되는 아이템
     final suggestions = products.where((product) =>
-        product.title.toLowerCase().contains(query.toLowerCase())
+        product.foodName.toLowerCase().contains(query.toLowerCase())
     ).toList();
 
     return ListView.builder(
@@ -63,9 +63,9 @@ class ProductSearchDelegate extends SearchDelegate {
       itemBuilder: (context, index) {
         final product = suggestions[index];
         return ListTile(
-          title: Text(product.title),
+          title: Text(product.foodName),
           onTap: () {
-            query = product.title; // 검색창에 선택된 아이템 입력
+            query = product.foodName; // 검색창에 선택된 아이템 입력
             showResults(context); // 결과 표시
           },
         );

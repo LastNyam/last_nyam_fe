@@ -79,24 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: Padding(
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                       child: Text(
-                        '비밀번호 찾기',
-                        style: TextStyle(fontSize: 14.0, color: grey[400]),
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SignUpScreen(),
-                          // builder: (context) => ProfileEditScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  GestureDetector(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                      child: Text(
                         '회원가입',
                         style: TextStyle(fontSize: 14.0, color: grey[400]),
                       ),
