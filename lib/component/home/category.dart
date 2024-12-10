@@ -23,14 +23,14 @@ class _CategoryState extends State<Category> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.start, // 왼쪽 정렬
         children: categories.map((category) {
-          bool isSelected = category.type == selectedType; // 선택된 상태 확인
+          bool isSelected = category.text == selectedType; // 선택된 상태 확인
 
           return Padding(
             padding: const EdgeInsets.only(right: 10.0), // 버튼 간격 조정
             child: ElevatedButton(
               onPressed: () {
                 setState(() {
-                  selectedType = category.type; // 선택된 카테고리 타입 설정
+                  selectedType = category.text; // 선택된 카테고리 타입 설정
                 });
                 widget.onCategorySelected(selectedType); // 선택된 카테고리 콜백 호출
               },
