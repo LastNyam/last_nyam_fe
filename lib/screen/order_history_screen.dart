@@ -60,11 +60,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     }
   }
 
-
   Future<void> _updateReservationStatus(int index, String newStatus) async {
     try {
       final service = ReservationService();
-      await service.updateReservationStatus(reservations[index].reservationId, newStatus);
+      await service.updateReservationStatus(
+          reservations[index].reservationId, newStatus);
       setState(() {
         reservations[index] = reservations[index].copyWith(status: newStatus);
       });
@@ -103,65 +103,59 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   Widget build(BuildContext context) {
     final userState = Provider.of<UserState>(context);
 
-    if (isLoading) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('주문 내역'),
-        ),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    if (errorMessage.isNotEmpty) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('주문 내역'),
-        ),
-        body: Center(
-          child: Text(
-            '에러 발생: $errorMessage',
-            style: const TextStyle(color: Colors.red),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+          '주문 내역',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
           ),
         ),
-      );
-    }
-
-    return userState.isLogin ? Scaffold(
-      appBar: AppBar(
-        title: const Text('주문 내역'),
+        centerTitle: true,
+        backgroundColor: Colors.white,
+        elevation: 0,
       ),
       body: reservations.isEmpty
           ? const Center(child: Text('주문 내역이 없습니다.'))
           : RefreshIndicator(
-        onRefresh: _loadReservations,
-        child: ListView.builder(
-          padding: const EdgeInsets.all(8.0),
-          itemCount: reservations.length,
-          itemBuilder: (context, index) {
-            final reservation = reservations[index];
-            return OrderItem(
-              progress: _getProgressMessage(reservation.status),
-              storeName: reservation.storeName,
-              storeId: reservation.storeId.toString(), // int을 String으로 변환
-              foodName: reservation.foodName,
-              amount: '${reservation.number}개', // 'amount' 대신 'number' 사용
-              discountPrice: '${reservation.price}원',
-              isCompleted: _isCompletedStatus(reservation.status),
-              image: reservation.foodImage,
-              status: reservation.status,
-              reservationId: reservation.reservationId.toString(), // int을 String으로 변환
-              onCancel: () => _cancelReservation(reservation.reservationId, index),
-              onStatusChanged: (newStatus) => _updateReservationStatus(index, newStatus),
-            );
-          },
-        ),
-      ),
-    ) : Center(
-      child: Text(
-        '로그인 후 이용가능합니다.',
-        style:
-        TextStyle(color: defaultColors['lightGreen'], fontSize: 18),
-      ),
+              onRefresh: _loadReservations,
+              child: userState.isLogin
+                  ? ListView.builder(
+                      padding: const EdgeInsets.all(8.0),
+                      itemCount: reservations.length,
+                      itemBuilder: (context, index) {
+                        final reservation = reservations[index];
+                        return OrderItem(
+                          progress: _getProgressMessage(reservation.status),
+                          storeName: reservation.storeName,
+                          storeId: reservation.storeId.toString(),
+                          // int을 String으로 변환
+                          foodName: reservation.foodName,
+                          amount: '${reservation.number}개',
+                          // 'amount' 대신 'number' 사용
+                          discountPrice: '${reservation.price}원',
+                          isCompleted: _isCompletedStatus(reservation.status),
+                          image: reservation.foodImage,
+                          status: reservation.status,
+                          reservationId: reservation.reservationId.toString(),
+                          // int을 String으로 변환
+                          onCancel: () => _cancelReservation(
+                              reservation.reservationId, index),
+                          onStatusChanged: (newStatus) =>
+                              _updateReservationStatus(index, newStatus),
+                        );
+                      },
+                    )
+                  : Center(
+                      child: Text(
+                        '로그인 후 이용가능합니다.',
+                        style: TextStyle(
+                            color: defaultColors['lightGreen'], fontSize: 18),
+                      ),
+                    ),
+            ),
     );
   }
 }

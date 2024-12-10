@@ -173,20 +173,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       );
                     },
                   ),
-                  ListTile(
-                    leading: Icon(Icons.history, color: defaultColors['black']),
-                    title: Text('최근 본 상품'),
-                    trailing: Icon(Icons.chevron_right,
-                        color: defaultColors['lightGreen']),
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => RecentViewedProductsScreen(),
-                        ),
-                      );
-                    },
-                  ),
                   Divider(),
                   if (userState.isLogin)
                     ListTile(

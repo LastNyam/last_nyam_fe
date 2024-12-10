@@ -70,20 +70,6 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
         ),
-        actions: [
-          IconButton(
-            icon: Image.asset(
-              'assets/icon/search.png',
-              width: 24,
-            ),
-            onPressed: () {
-              showSearch(
-                context: context,
-                delegate: ProductSearchDelegate(products),
-              );
-            },
-          ),
-        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
