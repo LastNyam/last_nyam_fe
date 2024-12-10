@@ -6,7 +6,6 @@ import 'dart:typed_data';
 import 'package:last_nyam/colors.dart';
 import 'package:last_nyam/component/home/category.dart';
 import 'package:last_nyam/screen/content_detail.dart';
-import 'package:last_nyam/component/common/search.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:last_nyam/model/product.dart'; // Product 클래스 임포트
 
@@ -19,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   List<Product> products = [];
-  String selectedCategory = 'all';
+  String selectedCategory = '전체';
   bool isLoading = true;
 
   @override
@@ -56,9 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    final filteredProducts = products.where((product) =>
-    selectedCategory == 'all' || product.foodCategory == selectedCategory);
+    // 선택된 카테고리에 따라 필터링된 상품 리스트를 반환
+    final filteredProducts = products.where(
+          (product) =>
+      selectedCategory == '전체' || product.foodCategory == selectedCategory,
+    ).toList(); // Iterable을 List로 변환
 
     return Scaffold(
       appBar: AppBar(
@@ -73,13 +74,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : products.isEmpty
+          : filteredProducts.isEmpty // 필터링된 리스트가 비었는지 확인
           ? const Center(child: Text('상품이 없습니다.'))
           : ListView.builder(
         padding: const EdgeInsets.symmetric(vertical: 10),
         itemCount: filteredProducts.length,
         itemBuilder: (context, index) {
-          final product = filteredProducts.elementAt(index);
+          final product = filteredProducts[index]; // 필터링된 상품 리스트에서 가져옴
           return GestureDetector(
             onTap: () {
               Navigator.push(
@@ -98,6 +99,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
+
+
 }
 
 String getTimeDifference(String inputTimeString) {
