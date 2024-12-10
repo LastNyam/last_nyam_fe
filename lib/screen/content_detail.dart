@@ -9,7 +9,10 @@ import 'package:last_nyam/colors.dart';
 import 'package:last_nyam/component/common/search.dart';
 import 'package:intl/intl.dart'; // 숫자 포맷을 위한 패키지 추가
 import 'package:last_nyam/model/product.dart'; // Product 클래스 임포트
-import 'package:last_nyam/screen/retrieve_from_ai.dart'; // RetrieveFromAI 클래스 임포트
+import 'package:last_nyam/screen/retrieve_from_ai.dart';
+import 'package:provider/provider.dart';
+
+import '../component/provider/user_state.dart'; // RetrieveFromAI 클래스 임포트
 
 class ContentDetail extends StatefulWidget {
   final Product product;
@@ -136,6 +139,7 @@ class _ContentDetailState extends State<ContentDetail> {
   @override
   Widget build(BuildContext context) {
     // 로딩 중일 때 로딩 스피너 표시
+    final userState = Provider.of<UserState>(context);
     if (isLoading) {
       return Scaffold(
         backgroundColor: AppColors.whiteColor,
@@ -174,20 +178,6 @@ class _ContentDetailState extends State<ContentDetail> {
             icon: const Icon(Icons.navigate_before),
             onPressed: () => Navigator.pop(context),
           ),
-          actions: [
-            IconButton(
-              icon: Image.asset(
-                'assets/icon/search.png',
-                width: 24,
-              ),
-              onPressed: () {
-                showSearch(
-                  context: context,
-                  delegate: ProductSearchDelegate(widget.products),
-                );
-              },
-            ),
-          ],
         ),
         body: Center(
           child: Text(
@@ -280,21 +270,6 @@ class _ContentDetailState extends State<ContentDetail> {
                         productDetail!.storeName,
                         style: const TextStyle(
                           fontSize: 12,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            isLiked = !isLiked; // 하트 상태 변경
-                          });
-                        },
-                        child: Icon(
-                          isLiked
-                              ? Icons.favorite
-                              : Icons.favorite_border,
-                          color: isLiked
-                              ? AppColors.greenColor
-                              : AppColors.semigreen,
                         ),
                       ),
                     ],
@@ -552,7 +527,7 @@ class _ContentDetailState extends State<ContentDetail> {
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: productDetail!.count > 0
+                    onPressed: productDetail!.count > 0 && userState.isLogin
                         ? () {
                       _showPurchaseModal(context);
                     }
@@ -560,7 +535,7 @@ class _ContentDetailState extends State<ContentDetail> {
                       _showErrorDialog(context); // 예약하기 클릭 시 모달 실행
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: productDetail!.count > 0
+                      backgroundColor: productDetail!.count > 0 && userState.isLogin
                           ? AppColors.greenColor
                           : AppColors.semigreen,
                       shape: RoundedRectangleBorder(
@@ -601,6 +576,8 @@ class _ContentDetailState extends State<ContentDetail> {
 
   // 남은 수량이 0개일 때
   void _showErrorDialog(BuildContext context) {
+
+    final userState = Provider.of<UserState>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -611,8 +588,8 @@ class _ContentDetailState extends State<ContentDetail> {
             '예약 불가',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          content: const Text(
-            '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
+          content: Text(
+            !userState.isLogin ? '로그인 후 이용가능합니다.' : '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
           actions: [
