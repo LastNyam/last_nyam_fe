@@ -2,6 +2,7 @@
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,8 @@ class _ContentDetailState extends State<ContentDetail> {
         throw Exception('BASE_URL이 설정되지 않았습니다.');
       }
 
-      final response = await Dio().get('$baseUrl/food/${widget.product.foodId}');
+      final response =
+          await Dio().get('$baseUrl/food/${widget.product.foodId}');
 
       if (response.statusCode == 200) {
         final data = response.data['data'];
@@ -65,7 +67,6 @@ class _ContentDetailState extends State<ContentDetail> {
           productDetail = ProductDetail.fromJson(data);
           isLoading = false;
         });
-        fetchAIRecipe(); // 상세 정보가 로드된 후 AI 레시피 결과 가져오기
       } else {
         throw Exception('서버에서 실패 응답을 반환했습니다. 상태 코드: ${response.statusCode}');
       }
@@ -101,7 +102,8 @@ class _ContentDetailState extends State<ContentDetail> {
 
       // Dio 설정
       final dio = Dio();
-      dio.options.headers['Authorization'] = 'Bearer $token'; // Authorization 헤더 추가
+      dio.options.headers['Authorization'] =
+          'Bearer $token'; // Authorization 헤더 추가
 
       // POST 요청 보내기
       final response = await dio.post(
@@ -121,12 +123,12 @@ class _ContentDetailState extends State<ContentDetail> {
     }
   }
 
-
   // AI 레시피 결과 가져오기
   Future<void> fetchAIRecipe() async {
     try {
       if (productDetail != null) {
-        final result = await RetrieveFromAI.fetchAIResult(productDetail!, widget.product);
+        final result =
+            await RetrieveFromAI.fetchAIResult(productDetail!, widget.product);
         setState(() {
           aiRecipeResult = result;
         });
@@ -223,18 +225,19 @@ class _ContentDetailState extends State<ContentDetail> {
                 children: [
                   productDetail!.image.isNotEmpty
                       ? Image.memory(
-                    base64Decode(productDetail!.image),
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width,
-                    height: 280,
-                  )
+                          base64Decode(productDetail!.image),
+                          fit: BoxFit.cover,
+                          width: MediaQuery.of(context).size.width,
+                          height: 280,
+                        )
                       : const Center(child: Text('이미지를 불러올 수 없습니다.')),
                   // 남은 수량
                   Positioned(
                     right: 10,
                     bottom: 10,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 2),
                       decoration: BoxDecoration(
                         color: const Color(0xE5417C4E),
                         borderRadius: BorderRadius.circular(3),
@@ -354,9 +357,13 @@ class _ContentDetailState extends State<ContentDetail> {
                           GestureDetector(
                             onTap: () async {
                               setState(() {
+                                if (selectedRecipe == 'ai') {
+                                  return;
+                                }
                                 selectedRecipe = 'ai';
                                 isRecipeDetailVisible = true;
                               });
+
                               await fetchAIRecipe(); // 매개변수 제거
                             },
                             child: Stack(
@@ -393,7 +400,7 @@ class _ContentDetailState extends State<ContentDetail> {
                               setState(() {
                                 selectedRecipe = 'chef';
                                 selectedRecipeDetail =
-                                '셰프가 추천하는 레시피입니다. 정성스러운 요리법을 따라해 보세요!';
+                                    '셰프가 추천하는 레시피입니다. 정성스러운 요리법을 따라해 보세요!';
                                 isRecipeDetailVisible = true;
                               });
                             },
@@ -431,7 +438,7 @@ class _ContentDetailState extends State<ContentDetail> {
                               setState(() {
                                 selectedRecipe = 'user';
                                 selectedRecipeDetail =
-                                '사용자가 공유한 레시피입니다. 다양한 아이디어를 참고해 보세요!';
+                                    '사용자가 공유한 레시피입니다. 다양한 아이디어를 참고해 보세요!';
                                 isRecipeDetailVisible = true;
                               });
                             },
@@ -487,23 +494,25 @@ class _ContentDetailState extends State<ContentDetail> {
                         ),
 
                       // AI 레시피 결과 표시
-                      if (aiRecipeResult.isNotEmpty)
+                      if (aiRecipeResult.isNotEmpty && selectedRecipe == 'ai')
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Container(
+
                             padding: const EdgeInsets.symmetric(
                                 vertical: 20, horizontal: 12),
                             color: AppColors.semiwhite,
                             constraints: const BoxConstraints(
                               minWidth: double.infinity,
+                              maxHeight: 450,
                             ),
-                            child: Text(
-                              aiRecipeResult,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                height: 1.2,
-                                fontWeight: FontWeight.w300,
-                              ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                return Markdown(
+                                  data: aiRecipeResult,
+                                  shrinkWrap: true, // 텍스트 크기에 맞게 높이를 자동 조정
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -523,21 +532,22 @@ class _ContentDetailState extends State<ContentDetail> {
               ),
               child: Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                    const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: productDetail!.count > 0 && userState.isLogin
                         ? () {
-                      _showPurchaseModal(context);
-                    }
+                            _showPurchaseModal(context);
+                          }
                         : () {
-                      _showErrorDialog(context); // 예약하기 클릭 시 모달 실행
-                    },
+                            _showErrorDialog(context); // 예약하기 클릭 시 모달 실행
+                          },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: productDetail!.count > 0 && userState.isLogin
-                          ? AppColors.greenColor
-                          : AppColors.semigreen,
+                      backgroundColor:
+                          productDetail!.count > 0 && userState.isLogin
+                              ? AppColors.greenColor
+                              : AppColors.semigreen,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
@@ -576,20 +586,21 @@ class _ContentDetailState extends State<ContentDetail> {
 
   // 남은 수량이 0개일 때
   void _showErrorDialog(BuildContext context) {
-
     final userState = Provider.of<UserState>(context, listen: false);
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           title: const Text(
             '예약 불가',
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
           content: Text(
-            !userState.isLogin ? '로그인 후 이용가능합니다.' : '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
+            !userState.isLogin
+                ? '로그인 후 이용가능합니다.'
+                : '현재 해당 상품이 품절되어 판매 중단 상태입니다.\n관심 매장을 등록하시면 새 상품이 등록될 때 알림을 받을 수 있어요!',
             style: TextStyle(fontSize: 14, fontWeight: FontWeight.w300),
           ),
           actions: [
@@ -639,8 +650,7 @@ class _ContentDetailState extends State<ContentDetail> {
                   // 품목 정보
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment:
-                    CrossAxisAlignment.end, // 전체 하단 정렬
+                    crossAxisAlignment: CrossAxisAlignment.end, // 전체 하단 정렬
                     children: [
                       // 상품 정보
                       Column(
@@ -664,8 +674,7 @@ class _ContentDetailState extends State<ContentDetail> {
                       ),
                       // 버튼 및 수량
                       Row(
-                        crossAxisAlignment:
-                        CrossAxisAlignment.end, // 내부 정렬 수정
+                        crossAxisAlignment: CrossAxisAlignment.end, // 내부 정렬 수정
                         children: [
                           // - 버튼
                           Container(
@@ -674,10 +683,10 @@ class _ContentDetailState extends State<ContentDetail> {
                             child: IconButton(
                               onPressed: quantity > 1
                                   ? () {
-                                setState(() {
-                                  quantity--;
-                                });
-                              }
+                                      setState(() {
+                                        quantity--;
+                                      });
+                                    }
                                   : null,
                               icon: Image.asset(
                                 'assets/icon/num_minus.png',
@@ -707,10 +716,10 @@ class _ContentDetailState extends State<ContentDetail> {
                             child: IconButton(
                               onPressed: quantity < productDetail!.count
                                   ? () {
-                                setState(() {
-                                  quantity++;
-                                });
-                              }
+                                      setState(() {
+                                        quantity++;
+                                      });
+                                    }
                                   : null,
                               icon: Image.asset(
                                 'assets/icon/num_plus.png',
@@ -771,10 +780,9 @@ class _ContentDetailState extends State<ContentDetail> {
       builder: (BuildContext context) {
         return Dialog(
           shape:
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           child: Padding(
-            padding:
-            const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
+            padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -817,10 +825,12 @@ class _ContentDetailState extends State<ContentDetail> {
                           productDetail!.count -= quantity; // 수량 감소
                         });
 
-                        makeReservation(widget.product.foodId, quantity).then((_) {
+                        makeReservation(widget.product.foodId, quantity)
+                            .then((_) {
                           // 예약 성공 후 처리
                           Navigator.pop(context); // 다이얼로그 닫기
-                          Navigator.pop(context, productDetail); // 디테일 화면 닫고 데이터 반환
+                          Navigator.pop(
+                              context, productDetail); // 디테일 화면 닫고 데이터 반환
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(content: Text('예약이 완료되었습니다.')),
                           );

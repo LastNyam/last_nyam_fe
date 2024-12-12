@@ -6,7 +6,7 @@ class RetrieveFromAI {
   static Future<String> fetchAIResult(ProductDetail productDetail, Product product) async {
     try {
       // Flask API URL 설정
-      final String apiUrl = "http://192.168.63.55:5000/generate-recipe";
+      final String apiUrl = "http://52.78.8.61:5000/generate-recipe";
 
       // 요청 본문 데이터
       final Map<String, dynamic> requestData = {
