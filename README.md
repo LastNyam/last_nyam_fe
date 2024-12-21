@@ -34,7 +34,7 @@ Flutter, Dart, Java, Spring boot 등 다양한 기술 스택을 학습하고 적
 |**Category**|**Stack**|
 |------|---|
 |FE|Androdi Stdudio, Flutter, Dart|
-|BE|IntelliJ, Spring boot, Java, AWS, Github Action, RDS|
+|BE|IntelliJ, Spring boot, Java, AWS, Github Action, RDS, Python, Flask|
 |Collaboration|Git, Github, Figma, Discord, Canva, Notion|
 --------
 
