@@ -364,7 +364,7 @@ class _ContentDetailState extends State<ContentDetail> {
                                 isRecipeDetailVisible = true;
                               });
 
-                              await fetchAIRecipe(); // 매개변수 제거
+                              // await fetchAIRecipe(); // 매개변수 제거
                             },
                             child: Stack(
                               children: [
@@ -494,22 +494,46 @@ class _ContentDetailState extends State<ContentDetail> {
                         ),
 
                       // AI 레시피 결과 표시
-                      if (aiRecipeResult.isNotEmpty && selectedRecipe == 'ai')
+                      if (/*aiRecipeResult.isNotEmpty && */ selectedRecipe ==
+                          'ai')
                         Padding(
                           padding: const EdgeInsets.only(top: 10),
                           child: Container(
-
                             padding: const EdgeInsets.symmetric(
                                 vertical: 20, horizontal: 12),
                             color: AppColors.semiwhite,
                             constraints: const BoxConstraints(
                               minWidth: double.infinity,
-                              maxHeight: 450,
+                              maxHeight: 650,
                             ),
                             child: LayoutBuilder(
                               builder: (context, constraints) {
                                 return Markdown(
-                                  data: aiRecipeResult,
+                                  data: '요리: 삼겹살 구이'
+                                      '\n\n레시피:'
+                                      '\n\n1. **재료 준비하기:**'
+                                      '\n\t - 국내산 삼겹살 500g'
+                                      '\n\t - 소금, 후추 약간'
+                                      '\n\t - 마늘 3쪽'
+                                      '\n\t - 쌈채소 (상추, 깻잎 등)'
+                                      '\n\t - 쌈장, 고추장'
+                                      '\n\t - 참기름 조금'
+                                      '\n\t - 식용유 약간'
+                                      '\n\n2. **삼겹살 손질하기:**'
+                                      '\n\t - 삼겹살을 흐르는 물에 간단히 헹군 후, 먹기 좋은 크기(약5-7cm)로 자릅니다.'
+                                      '\n3. **마늘 준비하기:**'
+                                      '\n\t- 마늘은 껍질을 벗기고 얇게 편으로 썰어줍니다.'
+                                      '\n4. **팬예열하기:**'
+                                      '\n\t- 중간 불로 팬을 예열하고, 팬이 뜨거워지면 식용유를 약간 두릅니다.'
+                                      '\n5. **삼겹살 굽기:**'
+                                      '\n\t- 손질한 삼겹살을 팬에 올리고 소금과 후추를 약간 뿌린 후, 앞뒤 로 노릇노릇하게 익을 때까지 구워줍니다.'
+                                      '\n\t- 굽는 중간에 썰어놓은 마늘도 함께 볶으면서 풍미를 더합니다.'
+                                      '\n6. **삼겹살 완성하기:**'
+                                      '\n\t- 삼겹살이 양쪽 면 모두 노릇하게 익고 기름이 적당히 빠지면 불 을 끄고 잠시 그대로 두어 육즙을 유지합니다.'
+                                      '\n7. **상차림:**'
+                                      '\n\t- 접시에 구운 삼겹살과 마늘을 담고, 쌈채소, 쌈장, 참기름을 함 께 곁들입니다.'
+                                      '\n8. **먹기:**'
+                                      '\n\t- 삼겹살과 마늘을 쌈에 싸서 쌈장과 함께 맛있게 드시면 됩니다.',
                                   shrinkWrap: true, // 텍스트 크기에 맞게 높이를 자동 조정
                                 );
                               },
