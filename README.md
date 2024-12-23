@@ -39,8 +39,8 @@ Flutter, Dart, Java, Spring boot 등 다양한 기술 스택을 학습하고 적
 --------
 
 ### 🖥 ️주요 기능
-- 소비자용 앱 시연 영상
-![소비자](https://github.com/user-attachments/assets/e60a6723-fa63-416e-b216-873882116ccd)
+- 사장님용 앱 시연 영상 <br/>
+![사장님](https://github.com/user-attachments/assets/e60a6723-fa63-416e-b216-873882116ccd)
 
 <details>
 <summary>로그인 화면</summary>
