@@ -207,7 +207,7 @@ Flutter, Dart, Java, Spring boot 등 다양한 기술 스택을 학습하고 적
 | Profile | Role | Part |
 | ------- | ---- | ---- |
 | <div align="center"><a href="https://github.com/ttatjwi"><img src="https://avatars.githubusercontent.com/u/144876617?v=4" width="70px;" alt=""/><br/><sub><b>이수영</b><sub></a></div> | 팀장 |  |
-| <div align="center"><a href="https://github.com/geemmmii" width="70px;" alt=""/><img src="https://avatars.githubusercontent.com/u/108430795?v=4" width="70px;" alt=""/><br/><sub><b>김희겸</b></sub></a></div> | 팀원 |  | - 소비자용 어플 홈화면 개발<br/>- 사장님용 어플 홈화면 개발<br/>- OpenAI API key를 활용한 GPT 4o-mini를 통한 자동레시피 생성기능 개발<br/>- 예약기능 백엔드 API연동
+| <div align="center"><a href="https://github.com/geemmmii" width="70px;" alt=""/><img src="https://avatars.githubusercontent.com/u/108430795?v=4" width="70px;" alt=""/><br/><sub><b>김희겸</b></sub></a></div> | 팀원 | - 소비자용 어플 홈화면 개발<br/>- 사장님용 어플 홈화면 개발<br/>- OpenAI API key를 활용한 GPT 4o-mini를 통한 자동레시피 생성기능 개발<br/>- 예약기능 백엔드 API연동 |
 | <div align="center"><a href="https://github.com/Jinoko01"><img src="https://avatars.githubusercontent.com/u/126740959?v=4" width="70px;" alt=""/><br/><sub><b>황용진</b></sub></a></div> | 팀원 | - 구글맵 API를 활용한 주변 매장 UI 및 기능 개발<br/>- 로그인/회원가입 UI 및 기능 개발<br/>- geolocator를 활용하여 주소 입력시 좌표로 변환하는 기능 개발<br/>- 예약시간 타이머 기능 개발<br/>- 사업자등록번호 검증 API를 활용하여 매장 검증 기능 개발<br/>- 소비자와 매장 간 예약처리 동시성 제어<br/>- imagePicker를 활용한 이미지 업로드 처리 | 
 | <div align="center"><a href="https://github.com/jungbk0808"><img src="https://avatars.githubusercontent.com/u/120279225?v=4" width="70px;" alt=""/><br/><sub><b>정보경</b></sub></a></div> | 팀원 |  | 
 
